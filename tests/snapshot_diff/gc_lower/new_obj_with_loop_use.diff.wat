@@ -1,5 +1,5 @@
 ;; ====================
-(func $tests/gc_lower/new_obj_with_loop_use/_start (type $func.0 (func))
+(func $tests/snapshot_diff/gc_lower/new_obj_with_loop_use/_start (type $func.0 (func))
   (local i32)
   (local i32)
   block ;;none
@@ -20,14 +20,14 @@
 ;; ====================
       loop ;;none
         if ;;none
-          global.get $tests/gc_lower/new_obj_with_loop_use/v
+          global.get $tests/snapshot_diff/gc_lower/new_obj_with_loop_use/v
           block ;;unreachable
                 local.get $0
                 i32.const 0
               i32.eq
             local.set $1
                   i32.const 0
-                call $tests/common_lib/normal/Normal#constructor
+                call $tests/snapshot_diff/common_lib/normal/Normal#constructor
 ;; ======remove=======
 ;;            call $~lib/rt/__localtostack
 ;; =========add========

@@ -1,5 +1,5 @@
 ;; ====================
-(func $tests/gc_ssa_merge/ssa_merge_by_get_param/_start (type $func.0 (func (param i32)))
+(func $tests/snapshot_diff/gc_ssa_merge/ssa_merge_by_get_param/_start (type $func.0 (func (param i32)))
 ;; ======remove=======
 ;;block ;;none
 ;;    i32.const 4
@@ -9,7 +9,7 @@
 ;; ======remove=======
 ;;    call $~lib/rt/__tostack<0>
 ;; ====================
-  call $tests/gc_ssa_merge/ssa_merge_by_get_param/foo
+  call $tests/snapshot_diff/gc_ssa_merge/ssa_merge_by_get_param/foo
 ;; ======remove=======
 ;;    i32.const 4
 ;;  call $~lib/rt/__increase_sp

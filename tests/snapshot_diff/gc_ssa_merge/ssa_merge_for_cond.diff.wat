@@ -1,5 +1,5 @@
 ;; ====================
-(func $tests/gc_ssa_merge/ssa_merge_for_cond/_start (type $func.0 (func))
+(func $tests/snapshot_diff/gc_ssa_merge/ssa_merge_for_cond/_start (type $func.0 (func))
   (local i32)
   block ;;none
 ;; ======remove=======
@@ -13,9 +13,9 @@
         call $~lib/rt/__tostack<0>
       local.set $0
       if ;;none
-        global.get $tests/gc_ssa_merge/ssa_merge_for_cond/g
+        global.get $tests/snapshot_diff/gc_ssa_merge/ssa_merge_for_cond/g
               i32.const 0
-            call $tests/common_lib/normal/Normal#constructor
+            call $tests/snapshot_diff/common_lib/normal/Normal#constructor
           call $~lib/rt/__tostack<4>
         local.set $0
       end
@@ -23,7 +23,7 @@
 ;; ======remove=======
 ;;      call $~lib/rt/__tostack<8>
 ;; ====================
-      call $tests/gc_ssa_merge/ssa_merge_for_cond/foo
+      call $tests/snapshot_diff/gc_ssa_merge/ssa_merge_for_cond/foo
     end
 ;; ======remove=======
 ;;    i32.const 12

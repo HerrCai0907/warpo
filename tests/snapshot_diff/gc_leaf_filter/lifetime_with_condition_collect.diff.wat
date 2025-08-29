@@ -1,5 +1,5 @@
 ;; ====================
-(func $tests/gc_leaf_filter/lifetime_with_condition_collect/foo_true (type $func.0 (func (result i32)))
+(func $tests/snapshot_diff/gc_leaf_filter/lifetime_with_condition_collect/foo_true (type $func.0 (func (result i32)))
   (local i32)
   (local i32)
   block ;;i32
@@ -7,11 +7,11 @@
     call $~lib/rt/__decrease_sp
       block ;;unreachable
               i32.const 0
-            call $tests/common_lib/normal/Normal#constructor
+            call $tests/snapshot_diff/common_lib/normal/Normal#constructor
           call $~lib/rt/__tostack<0>
         local.set $0
         if ;;none
-          global.get $tests/gc_leaf_filter/lifetime_with_condition_collect/v
+          global.get $tests/snapshot_diff/gc_leaf_filter/lifetime_with_condition_collect/v
           call $~lib/rt/itcms/__collect
         end
         block ;;unreachable
@@ -29,7 +29,7 @@
     local.get $1
   end
 )
-(func $tests/gc_leaf_filter/lifetime_with_condition_collect/foo_false (type $func.0 (func (result i32)))
+(func $tests/snapshot_diff/gc_leaf_filter/lifetime_with_condition_collect/foo_false (type $func.0 (func (result i32)))
   (local i32)
   (local i32)
   block ;;i32
@@ -37,11 +37,11 @@
     call $~lib/rt/__decrease_sp
       block ;;unreachable
               i32.const 0
-            call $tests/common_lib/normal/Normal#constructor
+            call $tests/snapshot_diff/common_lib/normal/Normal#constructor
           call $~lib/rt/__tostack<0>
         local.set $0
         if ;;none
-            global.get $tests/gc_leaf_filter/lifetime_with_condition_collect/v
+            global.get $tests/snapshot_diff/gc_leaf_filter/lifetime_with_condition_collect/v
           i32.eqz
           call $~lib/rt/itcms/__collect
         end
@@ -60,7 +60,7 @@
     local.get $1
   end
 )
-(func $tests/gc_leaf_filter/lifetime_with_condition_collect/foo_other_branch (type $func.0 (func (result i32)))
+(func $tests/snapshot_diff/gc_leaf_filter/lifetime_with_condition_collect/foo_other_branch (type $func.0 (func (result i32)))
   (local i32)
 ;; ======remove=======
 ;;(local i32)
@@ -70,13 +70,13 @@
 ;; ====================
   block ;;unreachable
         i32.const 0
-      call $tests/common_lib/normal/Normal#constructor
+      call $tests/snapshot_diff/common_lib/normal/Normal#constructor
 ;; ======remove=======
 ;;        call $~lib/rt/__tostack<0>
 ;; ====================
     local.set $0
     if ;;none
-      global.get $tests/gc_leaf_filter/lifetime_with_condition_collect/v
+      global.get $tests/snapshot_diff/gc_leaf_filter/lifetime_with_condition_collect/v
 ;; ======remove=======
 ;;        block ;;unreachable
 ;; ====================

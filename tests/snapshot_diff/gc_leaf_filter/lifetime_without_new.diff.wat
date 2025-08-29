@@ -1,5 +1,5 @@
 ;; ====================
-(func $tests/gc_leaf_filter/lifetime_without_new/_start (type $func.0 (func (result i32)))
+(func $tests/snapshot_diff/gc_leaf_filter/lifetime_without_new/_start (type $func.0 (func (result i32)))
   (local i32)
 ;; ======remove=======
 ;;(local i32)
@@ -9,7 +9,7 @@
 ;; ====================
   block ;;unreachable
         i32.const 0
-      call $tests/common_lib/normal/Normal#constructor
+      call $tests/snapshot_diff/common_lib/normal/Normal#constructor
 ;; ======remove=======
 ;;        call $~lib/rt/__tostack<0>
 ;; ====================

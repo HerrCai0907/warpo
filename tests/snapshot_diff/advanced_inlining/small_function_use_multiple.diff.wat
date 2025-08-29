@@ -1,5 +1,5 @@
 ;; ====================
-(func $tests/advanced_inlining/small_function_use_multiple/_start (type $func.0 (func))
+(func $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/_start (type $func.0 (func))
 ;; =========add========
   (local i32)
   (local i32)
@@ -40,7 +40,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $1
           local.get $0
@@ -56,7 +56,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $3
           local.get $2
@@ -72,7 +72,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $5
           local.get $4
@@ -88,7 +88,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $7
           local.get $6
@@ -104,7 +104,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $9
           local.get $8
@@ -120,7 +120,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $11
           local.get $10
@@ -136,7 +136,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $13
           local.get $12
@@ -152,7 +152,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $15
           local.get $14
@@ -168,7 +168,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $17
           local.get $16
@@ -184,7 +184,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $19
           local.get $18
@@ -200,7 +200,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $21
           local.get $20
@@ -216,7 +216,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $23
           local.get $22
@@ -232,7 +232,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $25
           local.get $24
@@ -248,7 +248,7 @@
 ;; ====================
         i32.const 2
 ;; ======remove=======
-;;  call $tests/advanced_inlining/small_function_use_multiple/smallFunc
+;;  call $tests/snapshot_diff/advanced_inlining/small_function_use_multiple/smallFunc
 ;; =========add========
       local.set $27
           local.get $26

@@ -1,5 +1,6 @@
 #include "warpo/common/Features.hpp"
 #include "warpo/support/Opt.hpp"
+#include "wasm-features.h"
 
 namespace warpo::common {
 
@@ -54,6 +55,19 @@ uint32_t Features::toASFeaturesFlags() const {
   if (has(Features::bulkMemory()))
     flags |= static_cast<uint32_t>(ASFeatures::BulkMemory);
   return flags;
+}
+
+uint32_t Features::toBinaryenFeatureSet() const {
+  wasm::FeatureSet features = wasm::FeatureSet::None;
+  if (has(Features::signExtension()))
+    features |= wasm::FeatureSet::SignExt;
+  if (has(Features::mutableGlobals()))
+    features |= wasm::FeatureSet::MutableGlobals;
+  if (has(Features::nontrappingF2I()))
+    features |= wasm::FeatureSet::TruncSat;
+  if (has(Features::bulkMemory()))
+    features |= wasm::FeatureSet::BulkMemoryOpt;
+  return features.features;
 }
 
 } // namespace warpo::common

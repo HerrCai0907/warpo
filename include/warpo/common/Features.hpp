@@ -43,6 +43,8 @@ public:
   bool has(Features feature) const { return (*this & feature) == feature; }
 
   uint32_t toASFeaturesFlags() const;
+
+  uint32_t toBinaryenFeatureSet() const;
 };
 
 } // namespace warpo::common

@@ -6,7 +6,7 @@ add_library(warpo_frontend ${warpo_frontend_sources})
 
 target_link_libraries(warpo_frontend
   PRIVATE warpo_frontend_asc vb_libWasmModule
-  PUBLIC binaryen fmt::fmt warpo_support warpo_common
+  PUBLIC binaryen fmt::fmt warpo_common
 )
 target_include_directories(warpo_frontend
   PRIVATE "${PROJECT_SOURCE_DIR}/third_party/binaryen/src"

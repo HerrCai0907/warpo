@@ -15,6 +15,7 @@
 #include "helper/ToString.hpp"
 #include "parser/wat-parser.h"
 #include "pass.h"
+#include "warpo/common/Features.hpp"
 #include "warpo/passes/Runner.hpp"
 #include "warpo/support/Opt.hpp"
 #include "wasm-binary.h"
@@ -40,7 +41,7 @@ static void ensureValidate(wasm::Module &m) {
 
 std::unique_ptr<wasm::Module> passes::loadWasm(const std::vector<char> &input) {
   std::unique_ptr<wasm::Module> m{new wasm::Module()};
-  wasm::WasmBinaryReader parser(*m, features, input);
+  wasm::WasmBinaryReader parser(*m, common::Features::fromCLI().toBinaryenFeatureSet(), input);
   parser.read();
   ensureValidate(*m);
   return m;
@@ -48,7 +49,7 @@ std::unique_ptr<wasm::Module> passes::loadWasm(const std::vector<char> &input) {
 
 std::unique_ptr<wasm::Module> passes::loadWat(std::string_view wat) {
   std::unique_ptr<wasm::Module> m{new wasm::Module()};
-  m->features = features;
+  m->features = common::Features::fromCLI().toBinaryenFeatureSet();
   auto parsed = wasm::WATParser::parseModule(*m, wat);
   if (auto *err = parsed.getErr())
     throw std::logic_error(err->msg);

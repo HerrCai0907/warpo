@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "CompilerImpl.hpp"
+#include "warpo/common/OptLevel.hpp"
 #include "warpo/frontend/Compiler.hpp"
 #include "warpo/support/Opt.hpp"
 
@@ -106,6 +107,8 @@ BinaryenModuleRef warpo::frontend::compile() {
       .initialMemory = initialMemoryOption.get() == static_cast<uint32_t>(-1)
                            ? std::nullopt
                            : std::optional<uint32_t>{initialMemoryOption.get()},
+      .optimizationLevel = common::getOptimizationLevel(),
+      .shrinkLevel = common::getShrinkLevel(),
   };
 
   return compile(entryPaths.get(), config);

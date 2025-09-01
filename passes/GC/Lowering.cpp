@@ -31,15 +31,17 @@ namespace warpo::passes {
 
 static cli::Opt<bool> NoLeafFunctionFilter{
     "--no-gc-leaf-function-filter",
-    [](argparse::Argument &arg) { arg.help("Disable leaf function filter during GC lowering").flag(); },
+    [](argparse::Argument &arg) { arg.help("Disable leaf function filter during GC lowering").flag().hidden(); },
 };
 static cli::Opt<bool> NoMergeSSA{
     "--no-gc-merge-ssa",
-    [](argparse::Argument &arg) { arg.help("Disable SSA merging during GC lowering").flag(); },
+    [](argparse::Argument &arg) { arg.help("Disable SSA merging during GC lowering").flag().hidden(); },
 };
 static cli::Opt<bool> NoOptimizedStackPositionAssigner{
     "--no-gc-optimized-stack-position-assigner",
-    [](argparse::Argument &arg) { arg.help("Disable optimized stack position assigner during GC lowering").flag(); },
+    [](argparse::Argument &arg) {
+      arg.help("Disable optimized stack position assigner during GC lowering").flag().hidden();
+    },
 };
 
 static cli::Opt<bool> TestOnlyControlGroup{

@@ -259,6 +259,8 @@ wasm::Module *FrontendCompiler::compile(std::vector<std::string> const &entryFil
       m.callExportedFunctionWithName<0>(stackTop, "addGlobalAlias", option, allocString(useName),
                                         allocString(useValue));
     }
+    m.callExportedFunctionWithName<0>(stackTop, "setOptimizeLevelHints", option, config.optimizationLevel,
+                                      config.shrinkLevel);
 
     int32_t const program = m.callExportedFunctionWithName<1>(stackTop, "newProgram", option)[0].i32;
     m.callExportedFunctionWithName<1>(stackTop, "__pin", program);

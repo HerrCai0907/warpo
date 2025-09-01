@@ -20,6 +20,8 @@ struct Config {
   bool exportRuntime;
   bool exportTable;
   std::optional<uint32_t> initialMemory;
+  uint32_t optimizationLevel;
+  uint32_t shrinkLevel;
 };
 
 BinaryenModuleRef compile();

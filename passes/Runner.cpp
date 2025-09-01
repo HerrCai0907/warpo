@@ -16,6 +16,7 @@
 #include "parser/wat-parser.h"
 #include "pass.h"
 #include "warpo/common/Features.hpp"
+#include "warpo/common/OptLevel.hpp"
 #include "warpo/passes/Runner.hpp"
 #include "warpo/support/Opt.hpp"
 #include "wasm-binary.h"
@@ -68,54 +69,65 @@ static std::vector<uint8_t> outputWasm(wasm::Module *m) {
   writer.write();
   return static_cast<std::vector<uint8_t>>(buffer);
 }
+
 static std::string outputWat(wasm::Module *m) {
   std::stringstream ss{};
   wasm::printStackIR(ss, m, wasm::PassOptions::getWithoutOptimization());
   return std::move(ss).str();
 }
 
+static std::unique_ptr<wasm::PassRunner> createPassRunner(wasm::Module *const m) {
+  auto passRunner = std::make_unique<wasm::PassRunner>(m);
+  passRunner->options.shrinkLevel = common::getShrinkLevel();
+  passRunner->options.optimizeLevel = common::getOptimizationLevel();
+  return passRunner;
+}
+
+static void lowering(wasm::Module *const m) {
+  {
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    passRunner->add(std::unique_ptr<wasm::Pass>{new passes::GCLowering()});
+    passRunner->run();
+  }
+#ifndef WARPO_RELEASE_BUILD
+  ensureValidate(*m);
+#endif
+}
+
+static void optimize(wasm::Module *const m) {
+  {
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    passRunner->addDefaultOptimizationPasses();
+    passRunner->add(std::unique_ptr<wasm::Pass>{passes::createAdvancedInliningPass()});
+    passRunner->run();
+  }
+#ifndef WARPO_RELEASE_BUILD
+  ensureValidate(*m);
+#endif
+  {
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    passRunner->add(std::unique_ptr<wasm::Pass>{passes::createExtractMostFrequentlyUsedGlobalsPass()});
+    passRunner->add(std::unique_ptr<wasm::Pass>{passes::createConditionalReturnPass()});
+    passRunner->run();
+  }
+#ifndef WARPO_RELEASE_BUILD
+  ensureValidate(*m);
+#endif
+  {
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    passRunner->setDebug(false);
+    passRunner->addDefaultOptimizationPasses();
+    passRunner->run();
+  }
+  ensureValidate(*m);
+}
+
 passes::Output passes::runOnModule(BinaryenModuleRef const m) {
 #ifndef WARPO_RELEASE_BUILD
   ensureValidate(*m);
 #endif
-  {
-    wasm::PassRunner passRunner{m};
-    passRunner.add(std::unique_ptr<wasm::Pass>{new passes::GCLowering()});
-    passRunner.run();
-  }
-#ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m);
-#endif
-  {
-    wasm::PassRunner defaultOptRunner{m};
-    defaultOptRunner.options.shrinkLevel = 2;
-    defaultOptRunner.options.optimizeLevel = 0;
-    defaultOptRunner.setDebug(false);
-    defaultOptRunner.addDefaultOptimizationPasses();
-    defaultOptRunner.add(std::unique_ptr<wasm::Pass>{passes::createAdvancedInliningPass()});
-    defaultOptRunner.run();
-  }
-#ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m);
-#endif
-  {
-    wasm::PassRunner passRunner{m};
-    passRunner.add(std::unique_ptr<wasm::Pass>{passes::createExtractMostFrequentlyUsedGlobalsPass()});
-    passRunner.add(std::unique_ptr<wasm::Pass>{passes::createConditionalReturnPass()});
-    passRunner.run();
-  }
-#ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m);
-#endif
-  {
-    wasm::PassRunner defaultOptRunner{m};
-    defaultOptRunner.options.shrinkLevel = 2;
-    defaultOptRunner.options.optimizeLevel = 0;
-    defaultOptRunner.setDebug(false);
-    defaultOptRunner.addDefaultOptimizationPasses();
-    defaultOptRunner.run();
-  }
-  ensureValidate(*m);
+  lowering(m);
+  optimize(m);
   return {.wat = outputWat(m), .wasm = outputWasm(m)};
 }
 

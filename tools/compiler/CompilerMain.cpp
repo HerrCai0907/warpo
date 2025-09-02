@@ -20,7 +20,7 @@ int main(int argc, const char *argv[]) {
 
   frontend::init();
 
-  argparse::ArgumentParser program("warpo_compiler");
+  argparse::ArgumentParser program("warpo_compiler", "git@" GIT_COMMIT);
   cli::init(program, argc, argv);
 
   BinaryenModuleRef const m = frontend::compile();

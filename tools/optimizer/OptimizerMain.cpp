@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
 
   passes::init();
 
-  argparse::ArgumentParser program("warpo");
+  argparse::ArgumentParser program("warpo", "git@" GIT_COMMIT);
   cli::init(program, argc, argv);
 
   if (!inputPath.get().ends_with("wat") && !inputPath.get().ends_with("wast")) {

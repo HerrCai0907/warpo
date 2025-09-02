@@ -26,7 +26,7 @@ int main(int argc, const char *argv[]) {
   frontend::init();
   passes::init();
 
-  argparse::ArgumentParser program("warpo_asc");
+  argparse::ArgumentParser program("warpo_asc", "git@" GIT_COMMIT);
 
   try {
     cli::init(program, argc, argv);

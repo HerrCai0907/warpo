@@ -9,6 +9,7 @@
 #include <string>
 
 #include "warpo/passes/Runner.hpp"
+#include "warpo/passes/RunnerForTest.hpp"
 #include "warpo/support/Opt.hpp"
 
 static warpo::cli::Opt<std::string> inputPath{
@@ -45,7 +46,7 @@ int main(int argc, char const *argv[]) {
   }
   std::string input{std::istreambuf_iterator<char>{ifstream}, {}};
 
-  std::string wat = passes::runOnWatForTesting(input, std::regex{functionRegex.get()});
+  std::string wat = passes::runOnWatForTest(input, std::regex{functionRegex.get()});
 
   std::ofstream watOf{outputPath.get(), std::ios::out};
   if (!watOf.good()) {

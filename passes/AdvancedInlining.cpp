@@ -49,6 +49,7 @@ using namespace wasm;
 namespace warpo::passes {
 
 static const cli::Opt<uint32_t> AdvInlineTolerableInstructionIncrease{
+    cli::Category::Optimization,
     "--adv-inline-tolerable-instruction-increase",
     [](argparse::Argument &arg) {
       arg.help("Tolerable instruction increase for each inline function").default_value(64U);

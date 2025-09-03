@@ -22,11 +22,13 @@ static std::optional<std::string> convertEmptyStringToNullOpt(std::string const 
 }
 
 static cli::Opt<std::vector<std::string>> entryPaths{
+    cli::Category::Frontend,
     "entries",
     [](argparse::Argument &arg) -> void { arg.help("entry files").nargs(argparse::nargs_pattern::at_least_one); },
 };
 
 static cli::Opt<std::vector<std::string>> useOptions{
+    cli::Category::Frontend,
     "-u",
     "--use",
     [](argparse::Argument &arg) -> void {
@@ -48,11 +50,13 @@ static std::map<std::string, std::string> getUses() {
 }
 
 static cli::Opt<std::string> ascWasmOption{
+    cli::Category::Frontend,
     "--asc-wasm",
     [](argparse::Argument &arg) -> void { arg.help("WASM files for the frontend compiler").hidden(); },
 };
 
 static cli::Opt<std::string> exportStartOption{
+    cli::Category::Frontend,
     "--exportStart",
     [](argparse::Argument &arg) -> void {
       arg.help("Exports the start function using the specified name instead of calling it implicitly."
@@ -62,10 +66,12 @@ static cli::Opt<std::string> exportStartOption{
 };
 
 static cli::Opt<bool> exportTableOption{
+    cli::Category::Frontend,
     "--exportTable",
     [](argparse::Argument &arg) -> void { arg.help("Exports the function table as 'table'.").flag(); },
 };
 static cli::Opt<bool> exportRuntimeOption{
+    cli::Category::Frontend,
     "--exportRuntime",
     [](argparse::Argument &arg) -> void {
       arg.help("Always exports the runtime helpers (__new, __collect, __pin etc.).").flag();
@@ -73,6 +79,7 @@ static cli::Opt<bool> exportRuntimeOption{
 };
 
 static cli::Opt<uint32_t> initialMemoryOption{
+    cli::Category::Frontend,
     "--initialMemory",
     [](argparse::Argument &arg) -> void {
       arg.help("Sets the initial memory size in pages.").nargs(1).default_value(static_cast<uint32_t>(-1));

@@ -9,11 +9,16 @@
 #include "warpo/frontend/Compiler.hpp"
 #include "warpo/support/Opt.hpp"
 
-static warpo::cli::Opt<std::string> outputPath{
+namespace warpo {
+
+static cli::Opt<std::string> outputPath{
+    cli::Category::All,
     "-t",
     "--text",
     [](argparse::Argument &arg) -> void { arg.help("output text file").required(); },
 };
+
+} // namespace warpo
 
 int main(int argc, const char *argv[]) {
   using namespace warpo;
@@ -21,7 +26,7 @@ int main(int argc, const char *argv[]) {
   frontend::init();
 
   argparse::ArgumentParser program("warpo_compiler", "git@" GIT_COMMIT);
-  cli::init(program, argc, argv);
+  cli::init(cli::Category::Frontend, program, argc, argv);
 
   BinaryenModuleRef const m = frontend::compile();
   if (m == nullptr)

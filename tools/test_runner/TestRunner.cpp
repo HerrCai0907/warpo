@@ -12,20 +12,25 @@
 #include "warpo/passes/RunnerForTest.hpp"
 #include "warpo/support/Opt.hpp"
 
-static warpo::cli::Opt<std::string> inputPath{
+namespace warpo {
+static cli::Opt<std::string> inputPath{
+    cli::Category::All,
     "-i",
     "--input",
     [](argparse::Argument &arg) -> void { arg.help("input file").required(); },
 };
-static warpo::cli::Opt<std::string> outputPath{
+static cli::Opt<std::string> outputPath{
+    cli::Category::All,
     "-o",
     "--output",
     [](argparse::Argument &arg) -> void { arg.help("output file").required(); },
 };
-static warpo::cli::Opt<std::string> functionRegex{
+static cli::Opt<std::string> functionRegex{
+    cli::Category::All,
     "--func",
     [](argparse::Argument &arg) -> void { arg.help("function name").required(); },
 };
+} // namespace warpo
 
 int main(int argc, char const *argv[]) {
   using namespace warpo;
@@ -34,7 +39,7 @@ int main(int argc, char const *argv[]) {
 
   argparse::ArgumentParser program("warpo_test_runner");
   try {
-    cli::init(program, argc, argv);
+    cli::init(cli::Category::All, program, argc, argv);
   } catch (const std::exception &e) {
     fmt::print(stderr, "ERROR: {}\n", e.what());
     return 1;

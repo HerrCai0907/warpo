@@ -31,14 +31,17 @@
 namespace warpo::passes::gc {
 
 static cli::Opt<bool> NoLeafFunctionFilter{
+    cli::Category::OnlyFroTest,
     "--no-gc-leaf-function-filter",
     [](argparse::Argument &arg) { arg.help("Disable leaf function filter during GC lowering").flag().hidden(); },
 };
 static cli::Opt<bool> NoMergeSSA{
+    cli::Category::OnlyFroTest,
     "--no-gc-merge-ssa",
     [](argparse::Argument &arg) { arg.help("Disable SSA merging during GC lowering").flag().hidden(); },
 };
 static cli::Opt<bool> NoOptimizedStackPositionAssigner{
+    cli::Category::OnlyFroTest,
     "--no-gc-optimized-stack-position-assigner",
     [](argparse::Argument &arg) {
       arg.help("Disable optimized stack position assigner during GC lowering").flag().hidden();
@@ -46,6 +49,7 @@ static cli::Opt<bool> NoOptimizedStackPositionAssigner{
 };
 
 static cli::Opt<bool> TestOnlyControlGroup{
+    cli::Category::OnlyFroTest,
     "--gc-test-only-control-group",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
 };

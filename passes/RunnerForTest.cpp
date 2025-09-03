@@ -23,14 +23,17 @@
 namespace warpo {
 
 static const cli::Opt<bool> EnableGCOptLowerPassForTesting{
+    cli::Category::OnlyFroTest,
     "--enable-gc-opt-lower-pass-for-testing",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
 };
 static const cli::Opt<bool> EnableGCFastLowerPassForTesting{
+    cli::Category::OnlyFroTest,
     "--enable-gc-fast-lower-pass-for-testing",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
 };
 static const cli::Opt<bool> EnableAdvancedInliningPassForTesting{
+    cli::Category::OnlyFroTest,
     "--enable-advanced-inlining-pass-for-testing",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
 };

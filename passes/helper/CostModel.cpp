@@ -14,6 +14,7 @@
 namespace warpo::passes {
 
 static cli::Opt<std::string> CostModelFile{
+    cli::Category::Optimization,
     "--cost-model-file",
     [](argparse::Argument &arg) {
       arg.help("Tolerable instruction increase for each inline function").default_value("");

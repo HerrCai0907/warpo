@@ -6,19 +6,36 @@
 
 namespace warpo::cli {
 
+enum class Category : uint32_t {
+  None = 0,
+  Frontend = 1 << 1,
+  Optimization = 1 << 2,
+  OnlyFroTest = 1 << 3,
+  All = static_cast<uint32_t>(-1),
+};
+
+inline Category operator|(Category a, Category b) {
+  return static_cast<Category>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+}
+inline Category operator&(Category a, Category b) {
+  return static_cast<Category>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+}
+
 namespace detail {
-void registerCallback(std::function<void(argparse::ArgumentParser &)> &&fn);
+void registerCallback(Category cat, std::function<void(argparse::ArgumentParser &)> &&fn);
 }
 
 template <typename T> struct Opt {
-  Opt(const char *name, std::function<void(argparse::Argument &)> &&fn) {
-    detail::registerCallback([fn = std::move(fn), name, this](argparse::ArgumentParser &argparser) -> void {
+  /// @param cat Category of this arg, one of this category is active in program will let this option be visible
+  Opt(Category cat, const char *name, std::function<void(argparse::Argument &)> &&fn) {
+    detail::registerCallback(cat, [fn = std::move(fn), name, this](argparse::ArgumentParser &argparser) -> void {
       fn(argparser.add_argument(name).store_into(v_));
     });
   }
-  Opt(const char *shortName, const char *longName, std::function<void(argparse::Argument &)> &&fn) {
+  /// @param cat Category of this arg, one of this category is active in program will let this option be visible
+  Opt(Category cat, const char *shortName, const char *longName, std::function<void(argparse::Argument &)> &&fn) {
     detail::registerCallback(
-        [fn = std::move(fn), shortName, longName, this](argparse::ArgumentParser &argparser) -> void {
+        cat, [fn = std::move(fn), shortName, longName, this](argparse::ArgumentParser &argparser) -> void {
           fn(argparser.add_argument(shortName, longName).store_into(v_));
         });
   }
@@ -29,6 +46,7 @@ private:
   T v_{};
 };
 
-void init(argparse::ArgumentParser &program, int argc, char const *argv[]);
+/// @param cat Category of this program
+void init(Category cat, argparse::ArgumentParser &program, int argc, char const *argv[]);
 
 } // namespace warpo::cli

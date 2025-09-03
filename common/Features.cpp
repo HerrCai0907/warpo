@@ -5,6 +5,7 @@
 namespace warpo::common {
 
 static cli::Opt<std::vector<std::string>> disableFeatureOptions{
+    cli::Category::Frontend | cli::Category::Optimization,
     "--disable-feature",
     [](argparse::Argument &arg) -> void {
       arg.help("disable mutable-globals, sign-extension, nontrapping-f2i, bulk-memory")

@@ -6,30 +6,32 @@
 #include "warpo/passes/Runner.hpp"
 #include "warpo/support/Opt.hpp"
 
-static warpo::cli::Opt<std::string> inputPath{
+namespace warpo {
+static cli::Opt<std::string> inputPath{
+    cli::Category::All,
     "-i",
     "--input",
     [](argparse::Argument &arg) -> void { arg.help("input file").required(); },
 };
 
-static warpo::cli::Opt<std::string> outputPath{
+static cli::Opt<std::string> outputPath{
+    cli::Category::All,
     "-o",
     "--output",
     [](argparse::Argument &arg) -> void { arg.help("output file").required(); },
 };
 
 void optMain(int argc, char const *argv[]) {
-  using namespace warpo;
-
   passes::init();
   argparse::ArgumentParser program("warpo", "git@" GIT_COMMIT);
-  cli::init(program, argc, argv);
+  cli::init(cli::Category::Optimization, program, argc, argv);
   passes::runAndEmit(inputPath.get(), outputPath.get());
 }
+} // namespace warpo
 
 int main(int argc, const char *argv[]) {
   try {
-    optMain(argc, argv);
+    warpo::optMain(argc, argv);
   } catch (std::exception const &e) {
     fmt::println("ERROR: {}", e.what());
     return 1;

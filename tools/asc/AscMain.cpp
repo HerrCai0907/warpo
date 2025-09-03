@@ -12,21 +12,22 @@
 #include "warpo/passes/Runner.hpp"
 #include "warpo/support/Opt.hpp"
 
-static warpo::cli::Opt<std::string> outputPath{
+namespace warpo {
+
+static cli::Opt<std::string> outputPath{
+    cli::Category::All,
     "-o",
     "--output",
     [](argparse::Argument &arg) -> void { arg.help("output file").required(); },
 };
 
 void ascMain(int argc, const char *argv[]) {
-  using namespace warpo;
-
   frontend::init();
   passes::init();
 
   argparse::ArgumentParser program("warpo_asc", "git@" GIT_COMMIT);
 
-  cli::init(program, argc, argv);
+  cli::init(cli::Category::Frontend | cli::Category::Optimization, program, argc, argv);
 
   BinaryenModuleRef const m = frontend::compile();
   if (m == nullptr)
@@ -35,9 +36,11 @@ void ascMain(int argc, const char *argv[]) {
   passes::runAndEmit(m, outputPath.get());
 }
 
+} // namespace warpo
+
 int main(int argc, const char *argv[]) {
   try {
-    ascMain(argc, argv);
+    warpo::ascMain(argc, argv);
   } catch (std::exception const &e) {
     fmt::println("ERROR: {}", e.what());
     return 1;

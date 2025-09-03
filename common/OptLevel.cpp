@@ -7,6 +7,7 @@
 namespace warpo::common {
 
 static cli::Opt<uint32_t> optimizeLevelOption{
+    cli::Category::Frontend | cli::Category::Optimization,
     "--optimizeLevel",
     [](argparse::Argument &arg) -> void {
       arg.help("How much to focus on optimizing code. [0-3]").nargs(1U).default_value(0U);
@@ -14,6 +15,7 @@ static cli::Opt<uint32_t> optimizeLevelOption{
 };
 
 static cli::Opt<uint32_t> shrinkLevelOption{
+    cli::Category::Frontend | cli::Category::Optimization,
     "--shrinkLevel",
     [](argparse::Argument &arg) -> void {
       arg.help("How much to focus on shrinking code. [0-2]").nargs(1U).default_value(0U);

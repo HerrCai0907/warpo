@@ -231,7 +231,7 @@ void frontendTestMain(int argc, const char *argv[]) {
 
   std::filesystem::path const testFolder = getTestFolder();
   std::filesystem::current_path(testFolder);
-  std::vector<std::filesystem::path> const testFiles = {collectTestFiles(testFolder)[0]};
+  std::vector<std::filesystem::path> const testFiles = collectTestFiles(testFolder);
 
   size_t const numThreads = std::max(1U, std::thread::hardware_concurrency());
   fmt::println("using {} threads for test execution.", numThreads);

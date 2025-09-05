@@ -13,6 +13,7 @@ file(GLOB_RECURSE asc_sources
   "${PROJECT_SOURCE_DIR}/assemblyscript/std/*.ts"
   "${PROJECT_SOURCE_DIR}/assemblyscript/scripts/*.js"
 )
+set_source_files_properties(${asc_sources})
 
 set(asc_target_folder "${CMAKE_BINARY_DIR}/build-as")
 

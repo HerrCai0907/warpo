@@ -9,6 +9,7 @@
 #include <fmt/format.h>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -57,8 +58,11 @@ public:
   static void deinit() { vb::WasmModule::destroyEnvironment(); }
 
   FrontendCompiler(Config const &config);
+  ~FrontendCompiler();
 
   warpo::frontend::Result compile(std::vector<std::string> const &entryFilePaths, Config const &config);
+
+  std::set<void *> allocedPtrs_;
 };
 
 } // namespace warpo::frontend

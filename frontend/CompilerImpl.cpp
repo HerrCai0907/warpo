@@ -225,9 +225,16 @@ bool FrontendCompiler::checkDiag(int32_t const program, bool useColorfulDiagMess
   return errorCount > 0;
 }
 
+FrontendCompiler::~FrontendCompiler() {
+  for (void *p : allocedPtrs_) {
+    std::free(p);
+  }
+}
+
 FrontendCompiler::FrontendCompiler(Config const &config)
     : logger(), m{logger}, stackTop(static_cast<uint8_t const *>(vb::getStackTop())) {
   m.setStacktraceRecordCount(32U);
+  m.setContext(this);
 
   if (config.ascWasmPath) [[unlikely]] {
     std::string const wasmBytes = readBinaryFile(*config.ascWasmPath);

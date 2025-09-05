@@ -1,3 +1,5 @@
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -7,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "CompilerImpl.hpp"
 #include "LinkedAPI.hpp"
 #include "binaryen/src/binaryen-c.h"
 #include "binaryen/src/literal.h"
@@ -14,164 +17,164 @@
 #include "wasm-compiler/src/core/common/NativeSymbol.hpp"
 #include "wasm-compiler/src/core/common/function_traits.hpp"
 
-namespace export_to_asc {
+namespace warpo::frontend::export_to_asc {
 namespace {
 
-uint64_t BinaryenCallGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenCallGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCallGetOperandAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
 uint64_t BinaryenReturnCallForLink(uint64_t module, uint64_t name, uint64_t operands, uint32_t numOperands,
-                                   uint64_t returnType, [[maybe_unused]] void *ctx) {
+                                   uint64_t returnType, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenReturnCall(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name),
       reinterpret_cast<BinaryenExpressionRef *>(operands), numOperands, static_cast<BinaryenType>(returnType)));
 }
 uint64_t BinaryenCallForLink(uint64_t module, uint64_t name, uint64_t operands, uint32_t numOperands,
-                             uint64_t returnType, [[maybe_unused]] void *ctx) {
+                             uint64_t returnType, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCall(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name),
       reinterpret_cast<BinaryenExpressionRef *>(operands), numOperands, static_cast<BinaryenType>(returnType)));
 }
-uint32_t BinaryenLoadGetBytesForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenLoadGetBytesForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenLoadGetBytes(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenBlockGetNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBlockGetNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBlockGetName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenBlockGetNumChildrenForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenBlockGetNumChildrenForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenBlockGetNumChildren(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenBlockGetChildAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBlockGetChildAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBlockGetChildAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenIfGetIfTrueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenIfGetIfTrueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenIfGetIfTrue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenIfGetIfFalseForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenIfGetIfFalseForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenIfGetIfFalse(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSelectGetIfTrueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSelectGetIfTrueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSelectGetIfTrue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSelectGetIfFalseForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSelectGetIfFalseForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSelectGetIfFalse(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenCallGetTargetForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenCallGetTargetForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCallGetTarget(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenConstForLink(uint64_t module, uint64_t literal, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenConstForLink(uint64_t module, uint64_t literal, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenConst(reinterpret_cast<BinaryenModuleRef>(module), *reinterpret_cast<BinaryenLiteral *>(literal)));
 }
-uint64_t BinaryenNopForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenNopForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenNop(reinterpret_cast<BinaryenModuleRef>(module)));
 }
 uint64_t BinaryenBlockForLink(uint64_t module, uint64_t name, uint64_t children, uint32_t numChildren, uint64_t type,
-                              [[maybe_unused]] void *ctx) {
+                              [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenBlock(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name),
                     reinterpret_cast<BinaryenExpressionRef *>(children), numChildren, type));
 }
 uint64_t BinaryenBinaryForLink(uint64_t module, uint32_t op, uint64_t left, uint64_t right,
-                               [[maybe_unused]] void *ctx) {
+                               [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBinary(reinterpret_cast<BinaryenModuleRef>(module), op,
                                                    reinterpret_cast<BinaryenExpressionRef>(left),
                                                    reinterpret_cast<BinaryenExpressionRef>(right)));
 }
-uint64_t BinaryenUnaryForLink(uint64_t module, uint32_t op, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenUnaryForLink(uint64_t module, uint32_t op, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenUnary(reinterpret_cast<BinaryenModuleRef>(module), op, reinterpret_cast<BinaryenExpressionRef>(value)));
 }
-uint64_t BinaryenRefIsNullForLink(uint64_t module, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefIsNullForLink(uint64_t module, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenRefIsNull(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(value)));
 }
 uint64_t ExpressionRunnerCreateForLink(uint64_t module, uint32_t flags, uint32_t maxDepth, uint32_t maxLoopIterations,
-                                       [[maybe_unused]] void *ctx) {
+                                       [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       ExpressionRunnerCreate(reinterpret_cast<BinaryenModuleRef>(module), flags, maxDepth, maxLoopIterations));
 }
-uint64_t ExpressionRunnerRunAndDisposeForLink(uint64_t runner, uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t ExpressionRunnerRunAndDisposeForLink(uint64_t runner, uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(ExpressionRunnerRunAndDispose(reinterpret_cast<ExpressionRunnerRef>(runner),
                                                                   reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenTypeExternrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeExternref(); }
-uint64_t BinaryenTypeAnyrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeAnyref(); }
-uint64_t BinaryenTypeEqrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeEqref(); }
-uint64_t BinaryenTypeStructrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeStructref(); }
-uint64_t BinaryenTypeArrayrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeArrayref(); }
-uint64_t BinaryenTypeI31refForLink([[maybe_unused]] void *ctx) { return BinaryenTypeI31ref(); }
-uint64_t BinaryenTypeStringrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeStringref(); }
-uint64_t BinaryenTypeNullrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeNullref(); }
-uint64_t BinaryenTypeNullFuncrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeNullFuncref(); }
-uint64_t BinaryenTypeNullExternrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeNullExternref(); }
-uint64_t BinaryenUnreachableForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTypeExternrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeExternref(); }
+uint64_t BinaryenTypeAnyrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeAnyref(); }
+uint64_t BinaryenTypeEqrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeEqref(); }
+uint64_t BinaryenTypeStructrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeStructref(); }
+uint64_t BinaryenTypeArrayrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeArrayref(); }
+uint64_t BinaryenTypeI31refForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeI31ref(); }
+uint64_t BinaryenTypeStringrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeStringref(); }
+uint64_t BinaryenTypeNullrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeNullref(); }
+uint64_t BinaryenTypeNullFuncrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeNullFuncref(); }
+uint64_t BinaryenTypeNullExternrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeNullExternref(); }
+uint64_t BinaryenUnreachableForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenUnreachable(reinterpret_cast<BinaryenModuleRef>(module)));
 }
-uint32_t BinaryenExpressionGetIdForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenExpressionGetIdForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint32_t>(BinaryenExpressionGetId(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenLocalSetIsTeeForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenLocalSetIsTeeForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenLocalSetIsTee(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenLocalSetGetIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenLocalSetGetIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenLocalSetGetIndex(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenLocalGetGetIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenLocalGetGetIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenLocalGetGetIndex(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenLocalSetGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLocalSetGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLocalSetGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenGlobalGetGetNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGlobalGetGetNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGlobalGetGetName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-int32_t BinaryenBinaryGetOpForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+int32_t BinaryenBinaryGetOpForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<int32_t>(BinaryenBinaryGetOp(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBinaryGetLeftForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBinaryGetLeftForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBinaryGetLeft(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBinaryGetRightForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBinaryGetRightForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBinaryGetRight(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-int32_t BinaryenConstGetValueI32ForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+int32_t BinaryenConstGetValueI32ForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenConstGetValueI32(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-int32_t BinaryenUnaryGetOpForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+int32_t BinaryenUnaryGetOpForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<int32_t>(BinaryenUnaryGetOp(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenExpressionGetTypeForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenExpressionGetTypeForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint64_t>(BinaryenExpressionGetType(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-int32_t BinaryenConstGetValueI64LowForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+int32_t BinaryenConstGetValueI64LowForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenConstGetValueI64Low(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-int32_t BinaryenConstGetValueI64HighForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+int32_t BinaryenConstGetValueI64HighForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenConstGetValueI64High(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-float BinaryenConstGetValueF32ForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+float BinaryenConstGetValueF32ForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenConstGetValueF32(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-double BinaryenConstGetValueF64ForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+double BinaryenConstGetValueF64ForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenConstGetValueF64(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint32_t BinaryenLoadIsSignedForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenLoadIsSignedForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenLoadIsSigned(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenTypeFuncrefForLink([[maybe_unused]] void *ctx) { return BinaryenTypeFuncref(); }
-uint32_t BinaryenSizeofLiteralForLink([[maybe_unused]] void *ctx) { return sizeof(wasm::Literal); }
-void BinaryenLiteralInt32ForLink(uint64_t ptr, int32_t x, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTypeFuncrefForLink([[maybe_unused]] vb::WasmModule *ctx) { return BinaryenTypeFuncref(); }
+uint32_t BinaryenSizeofLiteralForLink([[maybe_unused]] vb::WasmModule *ctx) { return sizeof(wasm::Literal); }
+void BinaryenLiteralInt32ForLink(uint64_t ptr, int32_t x, [[maybe_unused]] vb::WasmModule *ctx) {
   *reinterpret_cast<BinaryenLiteral *>(ptr) = BinaryenLiteralInt32(x);
 }
-void BinaryenLiteralInt64ForLink(uint64_t ptr, int32_t x, int32_t y, [[maybe_unused]] void *ctx) {
+void BinaryenLiteralInt64ForLink(uint64_t ptr, int32_t x, int32_t y, [[maybe_unused]] vb::WasmModule *ctx) {
   *reinterpret_cast<BinaryenLiteral *>(ptr) =
       BinaryenLiteralInt64((static_cast<int64_t>(y) << 32) | (static_cast<uint32_t>(x)));
 }
 void BinaryenSetMemoryForLink(uint64_t module, uint32_t initial, uint32_t maximum, uint64_t exportName,
                               uint64_t segmentNames, uint64_t segmentDatas, uint64_t segmentPassives,
                               uint64_t segmentOffsets, uint64_t segmentSizes, uint32_t numSegments, uint32_t shared,
-                              uint32_t memory64, uint64_t name, [[maybe_unused]] void *ctx) {
+                              uint32_t memory64, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenSetMemory(reinterpret_cast<BinaryenModuleRef>(module), initial, maximum,
                     reinterpret_cast<const char *>(exportName), reinterpret_cast<const char **>(segmentNames),
                     reinterpret_cast<const char **>(segmentDatas), reinterpret_cast<bool *>(segmentPassives),
@@ -179,255 +182,261 @@ void BinaryenSetMemoryForLink(uint64_t module, uint32_t initial, uint32_t maximu
                     reinterpret_cast<BinaryenIndex *>(segmentSizes), numSegments, shared != 0, memory64 != 0,
                     reinterpret_cast<const char *>(name));
 }
-uint32_t BinaryenModuleGetFeaturesForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenModuleGetFeaturesForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenModuleGetFeatures(reinterpret_cast<BinaryenModuleRef>(module));
 }
-uint64_t BinaryenIfGetConditionForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenIfGetConditionForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenIfGetCondition(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenUnaryGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenUnaryGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenUnaryGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenCallGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenCallGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenCallGetNumOperands(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenDropForLink(uint64_t module, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenDropForLink(uint64_t module, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenDrop(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(value)));
 }
 uint64_t BinaryenIfForLink(uint64_t module, uint64_t condition, uint64_t ifTrue, uint64_t ifFalse,
-                           [[maybe_unused]] void *ctx) {
+                           [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenIf(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(condition),
                  reinterpret_cast<BinaryenExpressionRef>(ifTrue), reinterpret_cast<BinaryenExpressionRef>(ifFalse)));
 }
-uint64_t BinaryenLoopForLink(uint64_t module, uint64_t in, uint64_t body, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLoopForLink(uint64_t module, uint64_t in, uint64_t body, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLoop(reinterpret_cast<BinaryenModuleRef>(module),
                                                  reinterpret_cast<const char *>(in),
                                                  reinterpret_cast<BinaryenExpressionRef>(body)));
 }
 uint64_t BinaryenBreakForLink(uint64_t module, uint64_t name, uint64_t condition, uint64_t value,
-                              [[maybe_unused]] void *ctx) {
+                              [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBreak(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name),
       reinterpret_cast<BinaryenExpressionRef>(condition), reinterpret_cast<BinaryenExpressionRef>(value)));
 }
-uint64_t BinaryenReturnForLink(uint64_t module, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenReturnForLink(uint64_t module, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenReturn(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(value)));
 }
-uint64_t BinaryenLocalSetForLink(uint64_t module, uint32_t index, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLocalSetForLink(uint64_t module, uint32_t index, uint64_t value,
+                                 [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLocalSet(reinterpret_cast<BinaryenModuleRef>(module), index,
                                                      reinterpret_cast<BinaryenExpressionRef>(value)));
 }
-uint64_t BinaryenTypeFromHeapTypeForLink(uint64_t heapType, uint32_t nullable, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTypeFromHeapTypeForLink(uint64_t heapType, uint32_t nullable, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenTypeFromHeapType(static_cast<BinaryenHeapType>(heapType), nullable != 0);
 }
-uint64_t BinaryenTypeGetHeapTypeForLink(uint64_t type, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTypeGetHeapTypeForLink(uint64_t type, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenTypeGetHeapType(static_cast<BinaryenType>(type));
 }
-uint64_t TypeBuilderCreateForLink(uint32_t size, [[maybe_unused]] void *ctx) {
+uint64_t TypeBuilderCreateForLink(uint32_t size, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(TypeBuilderCreate(size));
 }
-uint32_t TypeBuilderGetSizeForLink(uint64_t builder, [[maybe_unused]] void *ctx) {
+uint32_t TypeBuilderGetSizeForLink(uint64_t builder, [[maybe_unused]] vb::WasmModule *ctx) {
   return TypeBuilderGetSize(reinterpret_cast<TypeBuilderRef>(builder));
 }
-void TypeBuilderGrowForLink(uint64_t builder, uint32_t count, [[maybe_unused]] void *ctx) {
+void TypeBuilderGrowForLink(uint64_t builder, uint32_t count, [[maybe_unused]] vb::WasmModule *ctx) {
   TypeBuilderGrow(reinterpret_cast<TypeBuilderRef>(builder), count);
 }
-uint64_t TypeBuilderGetTempHeapTypeForLink(uint64_t builder, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t TypeBuilderGetTempHeapTypeForLink(uint64_t builder, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return TypeBuilderGetTempHeapType(reinterpret_cast<TypeBuilderRef>(builder), index);
 }
 uint64_t TypeBuilderGetTempRefTypeForLink(uint64_t builder, uint64_t heapType, int32_t nullable,
-                                          [[maybe_unused]] void *ctx) {
+                                          [[maybe_unused]] vb::WasmModule *ctx) {
   return TypeBuilderGetTempRefType(reinterpret_cast<TypeBuilderRef>(builder), heapType, nullable);
 }
 void TypeBuilderSetStructTypeForLink(uint64_t builder, uint32_t index, uint64_t fieldTypes, uint64_t fieldPackedTypes,
-                                     uint64_t fieldMutables, uint32_t numFields, [[maybe_unused]] void *ctx) {
+                                     uint64_t fieldMutables, uint32_t numFields, [[maybe_unused]] vb::WasmModule *ctx) {
   TypeBuilderSetStructType(
       reinterpret_cast<TypeBuilderRef>(builder), index, reinterpret_cast<BinaryenType *>(fieldTypes),
       reinterpret_cast<BinaryenPackedType *>(fieldPackedTypes), reinterpret_cast<bool *>(fieldMutables), numFields);
 }
-void TypeBuilderSetSubTypeForLink(uint64_t builder, uint32_t index, uint64_t superType, [[maybe_unused]] void *ctx) {
+void TypeBuilderSetSubTypeForLink(uint64_t builder, uint32_t index, uint64_t superType,
+                                  [[maybe_unused]] vb::WasmModule *ctx) {
   TypeBuilderSetSubType(reinterpret_cast<TypeBuilderRef>(builder), index, static_cast<BinaryenHeapType>(superType));
 }
 uint64_t TypeBuilderGetTempTupleTypeForLink(uint64_t builder, uint64_t types, uint32_t numTypes,
-                                            [[maybe_unused]] void *ctx) {
+                                            [[maybe_unused]] vb::WasmModule *ctx) {
   return TypeBuilderGetTempTupleType(reinterpret_cast<TypeBuilderRef>(builder), reinterpret_cast<BinaryenType *>(types),
                                      numTypes);
 }
 void TypeBuilderSetSignatureTypeForLink(uint64_t builder, uint32_t index, uint64_t paramTypes, uint64_t resultTypes,
-                                        [[maybe_unused]] void *ctx) {
+                                        [[maybe_unused]] vb::WasmModule *ctx) {
   TypeBuilderSetSignatureType(reinterpret_cast<TypeBuilderRef>(builder), index, static_cast<BinaryenType>(paramTypes),
                               static_cast<BinaryenType>(resultTypes));
 }
 uint32_t TypeBuilderBuildAndDisposeForLink(uint64_t builder, uint64_t heapTypes, uint64_t errorIndex,
-                                           uint64_t errorReason, [[maybe_unused]] void *ctx) {
+                                           uint64_t errorReason, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(TypeBuilderBuildAndDispose(
       reinterpret_cast<TypeBuilderRef>(builder), reinterpret_cast<BinaryenHeapType *>(heapTypes),
       reinterpret_cast<BinaryenIndex *>(errorIndex), reinterpret_cast<TypeBuilderErrorReason *>(errorReason)));
 }
-uint32_t BinaryenStructTypeGetNumFieldsForLink(uint64_t heapType, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenStructTypeGetNumFieldsForLink(uint64_t heapType, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenStructTypeGetNumFields(static_cast<BinaryenHeapType>(heapType));
 }
 void BinaryenModuleSetFieldNameForLink(uint64_t module, uint64_t heapType, uint32_t index, uint64_t name,
-                                       [[maybe_unused]] void *ctx) {
+                                       [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenModuleSetFieldName(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenHeapType>(heapType),
                              index, reinterpret_cast<const char *>(name));
 }
-uint64_t BinaryenLocalGetForLink(uint64_t module, uint32_t index, uint64_t type, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLocalGetForLink(uint64_t module, uint32_t index, uint64_t type, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenLocalGet(reinterpret_cast<BinaryenModuleRef>(module), index, static_cast<BinaryenType>(type)));
 }
 uint64_t BinaryenAddFunctionForLink(uint64_t module, uint64_t name, uint64_t params, uint64_t results,
                                     uint64_t varTypes, uint32_t numVarTypes, uint64_t body,
-                                    [[maybe_unused]] void *ctx) {
+                                    [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAddFunction(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name),
       static_cast<BinaryenType>(params), static_cast<BinaryenType>(results), reinterpret_cast<BinaryenType *>(varTypes),
       numVarTypes, reinterpret_cast<BinaryenExpressionRef>(body)));
 }
 uint64_t BinaryenLocalTeeForLink(uint64_t module, uint32_t index, uint64_t value, uint64_t type,
-                                 [[maybe_unused]] void *ctx) {
+                                 [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLocalTee(reinterpret_cast<BinaryenModuleRef>(module), index,
                                                      reinterpret_cast<BinaryenExpressionRef>(value),
                                                      static_cast<BinaryenType>(type)));
 }
 void BinaryenAddGlobalImportForLink(uint64_t module, uint64_t internalName, uint64_t externalModuleName,
                                     uint64_t externalBaseName, uint64_t globalType, uint32_t mutable_,
-                                    [[maybe_unused]] void *ctx) {
+                                    [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenAddGlobalImport(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(internalName),
                           reinterpret_cast<const char *>(externalModuleName),
                           reinterpret_cast<const char *>(externalBaseName), static_cast<BinaryenType>(globalType),
                           mutable_ != 0);
 }
-uint64_t BinaryenGetGlobalForLink(uint64_t module, uint64_t name, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGetGlobalForLink(uint64_t module, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenGetGlobal(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name)));
 }
-uint32_t BinaryenGlobalIsMutableForLink(uint64_t global, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenGlobalIsMutableForLink(uint64_t global, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenGlobalIsMutable(reinterpret_cast<BinaryenGlobalRef>(global)));
 }
-void BinaryenLiteralFloat64ForLink(uint64_t ptr, double x, [[maybe_unused]] void *ctx) {
+void BinaryenLiteralFloat64ForLink(uint64_t ptr, double x, [[maybe_unused]] vb::WasmModule *ctx) {
   *reinterpret_cast<BinaryenLiteral *>(ptr) = BinaryenLiteralFloat64(x);
 }
-void BinaryenLiteralFloat32ForLink(uint64_t ptr, float x, [[maybe_unused]] void *ctx) {
+void BinaryenLiteralFloat32ForLink(uint64_t ptr, float x, [[maybe_unused]] vb::WasmModule *ctx) {
   *reinterpret_cast<BinaryenLiteral *>(ptr) = BinaryenLiteralFloat32(x);
 }
-void BinaryenLiteralVec128ForLink(uint64_t ptr, uint64_t bytes, [[maybe_unused]] void *ctx) {
+void BinaryenLiteralVec128ForLink(uint64_t ptr, uint64_t bytes, [[maybe_unused]] vb::WasmModule *ctx) {
   *reinterpret_cast<BinaryenLiteral *>(ptr) = BinaryenLiteralVec128(reinterpret_cast<const uint8_t *>(bytes));
 }
-uint64_t BinaryenRefNullForLink(uint64_t module, uint64_t type, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefNullForLink(uint64_t module, uint64_t type, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenRefNull(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenType>(type)));
 }
-uint64_t BinaryenRefI31ForLink(uint64_t module, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefI31ForLink(uint64_t module, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenRefI31(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(value)));
 }
 uint64_t BinaryenAddGlobalForLink(uint64_t module, uint64_t name, uint64_t type, uint32_t mutable_, uint64_t init,
-                                  [[maybe_unused]] void *ctx) {
+                                  [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenAddGlobal(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name),
                         static_cast<BinaryenType>(type), mutable_ != 0, reinterpret_cast<BinaryenExpressionRef>(init)));
 }
-uint64_t BinaryenGlobalSetForLink(uint64_t module, uint64_t name, uint64_t value, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGlobalSetForLink(uint64_t module, uint64_t name, uint64_t value,
+                                  [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGlobalSet(reinterpret_cast<BinaryenModuleRef>(module),
                                                       reinterpret_cast<const char *>(name),
                                                       reinterpret_cast<BinaryenExpressionRef>(value)));
 }
-uint64_t BinaryenGlobalGetForLink(uint64_t module, uint64_t name, uint64_t type, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGlobalGetForLink(uint64_t module, uint64_t name, uint64_t type, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGlobalGet(reinterpret_cast<BinaryenModuleRef>(module),
                                                       reinterpret_cast<const char *>(name),
                                                       static_cast<BinaryenType>(type)));
 }
 uint64_t BinaryenSwitchForLink(uint64_t module, uint64_t names, uint32_t numNames, uint64_t defaultName,
-                               uint64_t condition, uint64_t value, [[maybe_unused]] void *ctx) {
+                               uint64_t condition, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenSwitch(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char **>(names), numNames,
                      reinterpret_cast<const char *>(defaultName), reinterpret_cast<BinaryenExpressionRef>(condition),
                      reinterpret_cast<BinaryenExpressionRef>(value)));
 }
-void BinaryenConstGetValueV128ForLink(uint64_t expr, uint64_t out, [[maybe_unused]] void *ctx) {
+void BinaryenConstGetValueV128ForLink(uint64_t expr, uint64_t out, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenConstGetValueV128(reinterpret_cast<BinaryenExpressionRef>(expr), reinterpret_cast<uint8_t *>(out));
 }
-uint64_t BinaryenTypeCreateForLink(uint64_t types, uint32_t numTypes, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTypeCreateForLink(uint64_t types, uint32_t numTypes, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenTypeCreate(reinterpret_cast<BinaryenType *>(types), numTypes);
 }
 void BinaryenFunctionSetDebugLocationForLink(uint64_t func, uint64_t expr, uint32_t fileIndex, uint32_t lineNumber,
-                                             uint32_t columnNumber, [[maybe_unused]] void *ctx) {
+                                             uint32_t columnNumber, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenFunctionSetDebugLocation(reinterpret_cast<BinaryenFunctionRef>(func),
                                    reinterpret_cast<BinaryenExpressionRef>(expr), fileIndex, lineNumber, columnNumber);
 }
-void BinaryenFunctionSetLocalNameForLink(uint64_t func, uint32_t index, uint64_t name, [[maybe_unused]] void *ctx) {
+void BinaryenFunctionSetLocalNameForLink(uint64_t func, uint32_t index, uint64_t name,
+                                         [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenFunctionSetLocalName(reinterpret_cast<BinaryenFunctionRef>(func), index,
                                reinterpret_cast<const char *>(name));
 }
-uint32_t BinaryenExpressionGetSideEffectsForLink(uint64_t expr, uint64_t module, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenExpressionGetSideEffectsForLink(uint64_t expr, uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenExpressionGetSideEffects(reinterpret_cast<BinaryenExpressionRef>(expr),
                                                                 reinterpret_cast<BinaryenModuleRef>(module)));
 }
-uint64_t BinaryenRefEqForLink(uint64_t module, uint64_t left, uint64_t right, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefEqForLink(uint64_t module, uint64_t left, uint64_t right, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefEq(reinterpret_cast<BinaryenModuleRef>(module),
                                                   reinterpret_cast<BinaryenExpressionRef>(left),
                                                   reinterpret_cast<BinaryenExpressionRef>(right)));
 }
 uint64_t BinaryenStringEqForLink(uint64_t module, int32_t op, uint64_t left, uint64_t right,
-                                 [[maybe_unused]] void *ctx) {
+                                 [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringEq(reinterpret_cast<BinaryenModuleRef>(module), op,
                                                      reinterpret_cast<BinaryenExpressionRef>(left),
                                                      reinterpret_cast<BinaryenExpressionRef>(right)));
 }
-uint32_t BinaryenModuleAddDebugInfoFileNameForLink(uint64_t module, uint64_t filename, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenModuleAddDebugInfoFileNameForLink(uint64_t module, uint64_t filename,
+                                                   [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenModuleAddDebugInfoFileName(reinterpret_cast<BinaryenModuleRef>(module),
                                             reinterpret_cast<const char *>(filename));
 }
 void BinaryenAddFunctionImportForLink(uint64_t module, uint64_t internalName, uint64_t externalModuleName,
                                       uint64_t externalBaseName, uint64_t params, uint64_t results,
-                                      [[maybe_unused]] void *ctx) {
+                                      [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenAddFunctionImport(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(internalName),
                             reinterpret_cast<const char *>(externalModuleName),
                             reinterpret_cast<const char *>(externalBaseName), static_cast<BinaryenType>(params),
                             static_cast<BinaryenType>(results));
 }
-uint64_t BinaryenGetFunctionForLink(uint64_t module, uint64_t name, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGetFunctionForLink(uint64_t module, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenGetFunction(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name)));
 }
 uint64_t BinaryenLoadForLink(uint64_t module, uint32_t bytes, uint32_t signed_, uint32_t offset, uint32_t align,
-                             uint64_t type, uint64_t ptr, uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                             uint64_t type, uint64_t ptr, uint64_t memoryName, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLoad(
       reinterpret_cast<BinaryenModuleRef>(module), bytes, signed_ != 0, offset, align, static_cast<BinaryenType>(type),
       reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenStoreForLink(uint64_t module, uint32_t bytes, uint32_t offset, uint32_t align, uint64_t ptr,
-                              uint64_t value, uint64_t type, uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                              uint64_t value, uint64_t type, uint64_t memoryName,
+                              [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenStore(reinterpret_cast<BinaryenModuleRef>(module), bytes, offset, align,
                     reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<BinaryenExpressionRef>(value),
                     static_cast<BinaryenType>(type), reinterpret_cast<const char *>(memoryName)));
 }
-uint32_t BinaryenTypeIsNullableForLink(uint64_t type, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenTypeIsNullableForLink(uint64_t type, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenTypeIsNullable(static_cast<BinaryenType>(type)));
 }
-uint64_t BinaryenRefAsForLink(uint64_t module, uint32_t op, uint64_t ref, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefAsForLink(uint64_t module, uint32_t op, uint64_t ref, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefAs(reinterpret_cast<BinaryenModuleRef>(module),
                                                   static_cast<BinaryenOp>(op),
                                                   reinterpret_cast<BinaryenExpressionRef>(ref)));
 }
 uint64_t BinaryenSelectForLink(uint64_t module, uint64_t condition, uint64_t ifTrue, uint64_t ifFalse,
-                               [[maybe_unused]] void *ctx) {
+                               [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSelect(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(condition),
       reinterpret_cast<BinaryenExpressionRef>(ifTrue), reinterpret_cast<BinaryenExpressionRef>(ifFalse)));
 }
-uint64_t BinaryenExpressionCopyForLink(uint64_t expr, uint64_t module, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenExpressionCopyForLink(uint64_t expr, uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenExpressionCopy(reinterpret_cast<BinaryenExpressionRef>(expr),
                                                            reinterpret_cast<BinaryenModuleRef>(module)));
 }
 uint64_t BinaryenReturnCallIndirectForLink(uint64_t module, uint64_t table, uint64_t target, uint64_t operands,
                                            uint32_t numOperands, uint64_t params, uint64_t results,
-                                           [[maybe_unused]] void *ctx) {
+                                           [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenReturnCallIndirect(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(table),
       reinterpret_cast<BinaryenExpressionRef>(target), reinterpret_cast<BinaryenExpressionRef *>(operands), numOperands,
@@ -435,32 +444,33 @@ uint64_t BinaryenReturnCallIndirectForLink(uint64_t module, uint64_t table, uint
 }
 uint64_t BinaryenCallIndirectForLink(uint64_t module, uint64_t table, uint64_t target, uint64_t operands,
                                      uint32_t numOperands, uint64_t params, uint64_t results,
-                                     [[maybe_unused]] void *ctx) {
+                                     [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCallIndirect(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(table),
       reinterpret_cast<BinaryenExpressionRef>(target), reinterpret_cast<BinaryenExpressionRef *>(operands), numOperands,
       static_cast<BinaryenType>(params), static_cast<BinaryenType>(results)));
 }
-uint64_t BinaryenRefFuncForLink(uint64_t module, uint64_t func, uint64_t type, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefFuncForLink(uint64_t module, uint64_t func, uint64_t type, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefFunc(reinterpret_cast<BinaryenModuleRef>(module),
                                                     reinterpret_cast<const char *>(func),
                                                     static_cast<BinaryenType>(type)));
 }
 uint64_t BinaryenAtomicLoadForLink(uint64_t module, uint32_t bytes, uint32_t offset, uint64_t type, uint64_t ptr,
-                                   uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                                   uint64_t memoryName, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenAtomicLoad(reinterpret_cast<BinaryenModuleRef>(module), bytes, offset, static_cast<BinaryenType>(type),
                          reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenAtomicStoreForLink(uint64_t module, uint32_t bytes, uint32_t offset, uint64_t ptr, uint64_t value,
-                                    uint64_t type, uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                                    uint64_t type, uint64_t memoryName, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenAtomicStore(reinterpret_cast<BinaryenModuleRef>(module), bytes, offset,
                           reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<BinaryenExpressionRef>(value),
                           static_cast<BinaryenType>(type), reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenAtomicRMWForLink(uint64_t module, uint32_t op, uint32_t bytes, uint32_t offset, uint64_t ptr,
-                                  uint64_t value, uint64_t type, uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                                  uint64_t value, uint64_t type, uint64_t memoryName,
+                                  [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenAtomicRMW(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op), bytes, offset,
                         reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<BinaryenExpressionRef>(value),
@@ -468,563 +478,569 @@ uint64_t BinaryenAtomicRMWForLink(uint64_t module, uint32_t op, uint32_t bytes, 
 }
 uint64_t BinaryenAtomicCmpxchgForLink(uint64_t module, uint32_t bytes, uint32_t offset, uint64_t ptr, uint64_t expected,
                                       uint64_t replacement, uint64_t type, uint64_t memoryName,
-                                      [[maybe_unused]] void *ctx) {
+                                      [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicCmpxchg(
       reinterpret_cast<BinaryenModuleRef>(module), bytes, offset, reinterpret_cast<BinaryenExpressionRef>(ptr),
       reinterpret_cast<BinaryenExpressionRef>(expected), reinterpret_cast<BinaryenExpressionRef>(replacement),
       static_cast<BinaryenType>(type), reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenAtomicWaitForLink(uint64_t module, uint64_t ptr, uint64_t expected, uint64_t timeout, uint64_t type,
-                                   uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                                   uint64_t memoryName, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicWait(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(ptr),
       reinterpret_cast<BinaryenExpressionRef>(expected), reinterpret_cast<BinaryenExpressionRef>(timeout),
       static_cast<BinaryenType>(type), reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenAtomicNotifyForLink(uint64_t module, uint64_t ptr, uint64_t notifyCount, uint64_t memoryName,
-                                     [[maybe_unused]] void *ctx) {
+                                     [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicNotify(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(ptr),
       reinterpret_cast<BinaryenExpressionRef>(notifyCount), reinterpret_cast<const char *>(memoryName)));
 }
-uint64_t BinaryenAtomicFenceForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicFenceForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicFence(reinterpret_cast<BinaryenModuleRef>(module)));
 }
 uint64_t BinaryenMemorySizeForLink(uint64_t module, uint64_t memoryName, uint32_t memoryIs64,
-                                   [[maybe_unused]] void *ctx) {
+                                   [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemorySize(reinterpret_cast<BinaryenModuleRef>(module),
                                                        reinterpret_cast<const char *>(memoryName), memoryIs64 != 0));
 }
 uint64_t BinaryenMemoryGrowForLink(uint64_t module, uint64_t delta, uint64_t memoryName, uint32_t memoryIs64,
-                                   [[maybe_unused]] void *ctx) {
+                                   [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryGrow(reinterpret_cast<BinaryenModuleRef>(module),
                                                        reinterpret_cast<BinaryenExpressionRef>(delta),
                                                        reinterpret_cast<const char *>(memoryName), memoryIs64 != 0));
 }
 uint64_t BinaryenMemoryCopyForLink(uint64_t module, uint64_t dest, uint64_t source, uint64_t size,
-                                   uint64_t destMemoryName, uint64_t sourceMemoryName, [[maybe_unused]] void *ctx) {
+                                   uint64_t destMemoryName, uint64_t sourceMemoryName,
+                                   [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryCopy(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(dest),
       reinterpret_cast<BinaryenExpressionRef>(source), reinterpret_cast<BinaryenExpressionRef>(size),
       reinterpret_cast<const char *>(destMemoryName), reinterpret_cast<const char *>(sourceMemoryName)));
 }
 uint64_t BinaryenMemoryFillForLink(uint64_t module, uint64_t dest, uint64_t value, uint64_t size, uint64_t memoryName,
-                                   [[maybe_unused]] void *ctx) {
+                                   [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenMemoryFill(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(dest),
                          reinterpret_cast<BinaryenExpressionRef>(value), reinterpret_cast<BinaryenExpressionRef>(size),
                          reinterpret_cast<const char *>(memoryName)));
 }
-uint64_t BinaryenI31GetForLink(uint64_t module, uint64_t i31, uint32_t signed_, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenI31GetForLink(uint64_t module, uint64_t i31, uint32_t signed_, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenI31Get(reinterpret_cast<BinaryenModuleRef>(module),
                                                    reinterpret_cast<BinaryenExpressionRef>(i31), signed_ != 0));
 }
 uint64_t BinaryenSIMDReplaceForLink(uint64_t module, uint32_t op, uint64_t vec, uint32_t index, uint64_t value,
-                                    [[maybe_unused]] void *ctx) {
+                                    [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDReplace(
       reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op),
       reinterpret_cast<BinaryenExpressionRef>(vec), index, reinterpret_cast<BinaryenExpressionRef>(value)));
 }
 uint64_t BinaryenSIMDExtractForLink(uint64_t module, uint32_t op, uint64_t vec, uint32_t index,
-                                    [[maybe_unused]] void *ctx) {
+                                    [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDExtract(reinterpret_cast<BinaryenModuleRef>(module),
                                                         static_cast<BinaryenOp>(op),
                                                         reinterpret_cast<BinaryenExpressionRef>(vec), index));
 }
 uint64_t BinaryenSIMDShuffleForLink(uint64_t module, uint64_t left, uint64_t right, uint64_t mask,
-                                    [[maybe_unused]] void *ctx) {
+                                    [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenSIMDShuffle(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenExpressionRef>(left),
                           reinterpret_cast<BinaryenExpressionRef>(right), reinterpret_cast<const uint8_t *>(mask)));
 }
 uint64_t BinaryenSIMDLoadForLink(uint64_t module, uint32_t op, uint32_t offset, uint32_t align, uint64_t ptr,
-                                 uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                                 uint64_t memoryName, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenSIMDLoad(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op), offset, align,
                        reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenSIMDLoadStoreLaneForLink(uint64_t module, uint32_t op, uint32_t offset, uint32_t align, uint32_t index,
-                                          uint64_t ptr, uint64_t vec, uint64_t memoryName, [[maybe_unused]] void *ctx) {
+                                          uint64_t ptr, uint64_t vec, uint64_t memoryName,
+                                          [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDLoadStoreLane(
       reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op), offset, align, index,
       reinterpret_cast<BinaryenExpressionRef>(ptr), reinterpret_cast<BinaryenExpressionRef>(vec),
       reinterpret_cast<const char *>(memoryName)));
 }
 uint64_t BinaryenSIMDShiftForLink(uint64_t module, uint32_t op, uint64_t vec, uint64_t shift,
-                                  [[maybe_unused]] void *ctx) {
+                                  [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenSIMDShift(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op),
                         reinterpret_cast<BinaryenExpressionRef>(vec), reinterpret_cast<BinaryenExpressionRef>(shift)));
 }
 uint64_t BinaryenSIMDTernaryForLink(uint64_t module, uint32_t op, uint64_t a, uint64_t b, uint64_t c,
-                                    [[maybe_unused]] void *ctx) {
+                                    [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenSIMDTernary(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op),
                           reinterpret_cast<BinaryenExpressionRef>(a), reinterpret_cast<BinaryenExpressionRef>(b),
                           reinterpret_cast<BinaryenExpressionRef>(c)));
 }
-uint64_t BinaryenModuleCreateForLink([[maybe_unused]] void *ctx) {
+uint64_t BinaryenModuleCreateForLink([[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenModuleCreate());
 }
-void BinaryenSetLowMemoryUnusedForLink(uint32_t unused, [[maybe_unused]] void *ctx) {
+void BinaryenSetLowMemoryUnusedForLink(uint32_t unused, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenSetLowMemoryUnused(unused != 0);
 }
-void BinaryenModuleSetFeaturesForLink(uint64_t module, uint32_t features, [[maybe_unused]] void *ctx) {
+void BinaryenModuleSetFeaturesForLink(uint64_t module, uint32_t features, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenModuleSetFeatures(reinterpret_cast<BinaryenModuleRef>(module), features);
 }
-void BinaryenSetClosedWorldForLink(uint32_t closed, [[maybe_unused]] void *ctx) { BinaryenSetClosedWorld(closed != 0); }
-uint64_t BinaryenGetExportForLink(uint64_t module, uint64_t name, [[maybe_unused]] void *ctx) {
+void BinaryenSetClosedWorldForLink(uint32_t closed, [[maybe_unused]] vb::WasmModule *ctx) {
+  BinaryenSetClosedWorld(closed != 0);
+}
+uint64_t BinaryenGetExportForLink(uint64_t module, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenGetExport(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name)));
 }
 uint64_t BinaryenAddFunctionExportForLink(uint64_t module, uint64_t internalName, uint64_t externalName,
-                                          [[maybe_unused]] void *ctx) {
+                                          [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAddFunctionExport(reinterpret_cast<BinaryenModuleRef>(module),
                                                               reinterpret_cast<const char *>(internalName),
                                                               reinterpret_cast<const char *>(externalName)));
 }
 uint64_t BinaryenAddGlobalExportForLink(uint64_t module, uint64_t internalName, uint64_t externalName,
-                                        [[maybe_unused]] void *ctx) {
+                                        [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAddGlobalExport(reinterpret_cast<BinaryenModuleRef>(module),
                                                             reinterpret_cast<const char *>(internalName),
                                                             reinterpret_cast<const char *>(externalName)));
 }
-void BinaryenRemoveFunctionForLink(uint64_t module, uint64_t name, [[maybe_unused]] void *ctx) {
+void BinaryenRemoveFunctionForLink(uint64_t module, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenRemoveFunction(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name));
 }
-void BinaryenRemoveGlobalForLink(uint64_t module, uint64_t name, [[maybe_unused]] void *ctx) {
+void BinaryenRemoveGlobalForLink(uint64_t module, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenRemoveGlobal(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name));
 }
 void BinaryenAddMemoryImportForLink(uint64_t module, uint64_t internalName, uint64_t externalModuleName,
-                                    uint64_t externalBaseName, uint32_t shared, [[maybe_unused]] void *ctx) {
+                                    uint64_t externalBaseName, uint32_t shared, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenAddMemoryImport(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(internalName),
                           reinterpret_cast<const char *>(externalModuleName),
                           reinterpret_cast<const char *>(externalBaseName), shared != 0);
 }
 void BinaryenAddTableImportForLink(uint64_t module, uint64_t internalName, uint64_t externalModuleName,
-                                   uint64_t externalBaseName, [[maybe_unused]] void *ctx) {
+                                   uint64_t externalBaseName, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenAddTableImport(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(internalName),
                          reinterpret_cast<const char *>(externalModuleName),
                          reinterpret_cast<const char *>(externalBaseName));
 }
 uint64_t BinaryenAddTableExportForLink(uint64_t module, uint64_t internalName, uint64_t externalName,
-                                       [[maybe_unused]] void *ctx) {
+                                       [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAddTableExport(reinterpret_cast<BinaryenModuleRef>(module),
                                                            reinterpret_cast<const char *>(internalName),
                                                            reinterpret_cast<const char *>(externalName)));
 }
-void BinaryenSetPassArgumentForLink(uint64_t key, uint64_t value, [[maybe_unused]] void *ctx) {
+void BinaryenSetPassArgumentForLink(uint64_t key, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenSetPassArgument(reinterpret_cast<const char *>(key), reinterpret_cast<const char *>(value));
 }
-uint64_t BinaryenGetTableForLink(uint64_t module, uint64_t name, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGetTableForLink(uint64_t module, uint64_t name, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenGetTable(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(name)));
 }
 uint64_t BinaryenAddTableForLink(uint64_t module, uint64_t name, uint32_t initial, uint32_t maximum, uint64_t type,
-                                 [[maybe_unused]] void *ctx) {
+                                 [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAddTable(reinterpret_cast<BinaryenModuleRef>(module),
                                                      reinterpret_cast<const char *>(name), initial, maximum,
                                                      static_cast<BinaryenType>(type)));
 }
-void BinaryenTableSetInitialForLink(uint64_t table, uint32_t initial, [[maybe_unused]] void *ctx) {
+void BinaryenTableSetInitialForLink(uint64_t table, uint32_t initial, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenTableSetInitial(reinterpret_cast<BinaryenTableRef>(table), initial);
 }
-void BinaryenTableSetMaxForLink(uint64_t table, uint32_t maximum, [[maybe_unused]] void *ctx) {
+void BinaryenTableSetMaxForLink(uint64_t table, uint32_t maximum, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenTableSetMax(reinterpret_cast<BinaryenTableRef>(table), maximum);
 }
 uint64_t BinaryenAddActiveElementSegmentForLink(uint64_t module, uint64_t table, uint64_t name, uint64_t funcNames,
-                                                uint32_t numFuncNames, uint64_t offset, [[maybe_unused]] void *ctx) {
+                                                uint32_t numFuncNames, uint64_t offset,
+                                                [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAddActiveElementSegment(
       reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(table),
       reinterpret_cast<const char *>(name), reinterpret_cast<const char **>(funcNames), numFuncNames,
       reinterpret_cast<BinaryenExpressionRef>(offset)));
 }
-void BinaryenSetStartForLink(uint64_t module, uint64_t start, [[maybe_unused]] void *ctx) {
+void BinaryenSetStartForLink(uint64_t module, uint64_t start, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenSetStart(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<BinaryenFunctionRef>(start));
 }
-uint32_t BinaryenGetNumFunctionsForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenGetNumFunctionsForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenGetNumFunctions(reinterpret_cast<BinaryenModuleRef>(module));
 }
-uint64_t BinaryenGetFunctionByIndexForLink(uint64_t module, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGetFunctionByIndexForLink(uint64_t module, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGetFunctionByIndex(reinterpret_cast<BinaryenModuleRef>(module), index));
 }
-uint64_t BinaryenFunctionGetBodyForLink(uint64_t func, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenFunctionGetBodyForLink(uint64_t func, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenFunctionGetBody(reinterpret_cast<BinaryenFunctionRef>(func)));
 }
-uint64_t BinaryenLoopGetNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLoopGetNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLoopGetName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenLoopGetBodyForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLoopGetBodyForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLoopGetBody(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBreakGetNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBreakGetNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBreakGetName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBreakGetConditionForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBreakGetConditionForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBreakGetCondition(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBreakGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBreakGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBreakGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSwitchGetDefaultNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSwitchGetDefaultNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSwitchGetDefaultName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenSwitchGetNumNamesForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenSwitchGetNumNamesForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenSwitchGetNumNames(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenSwitchGetNameAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSwitchGetNameAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSwitchGetNameAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenSwitchGetConditionForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSwitchGetConditionForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSwitchGetCondition(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSwitchGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSwitchGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSwitchGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenCallIndirectGetTargetForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenCallIndirectGetTargetForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCallIndirectGetTarget(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenCallIndirectGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenCallIndirectGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenCallIndirectGetNumOperands(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenCallIndirectGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenCallIndirectGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenCallIndirectGetOperandAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenGlobalSetGetNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGlobalSetGetNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGlobalSetGetName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenGlobalSetGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGlobalSetGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGlobalSetGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenLoadGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenLoadGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenLoadGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStoreGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStoreGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStoreGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStoreGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStoreGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStoreGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSelectGetConditionForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSelectGetConditionForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSelectGetCondition(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenDropGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenDropGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenDropGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenReturnGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenReturnGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenReturnGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryGrowGetDeltaForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryGrowGetDeltaForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryGrowGetDelta(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicRMWGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicRMWGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicRMWGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicRMWGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicRMWGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicRMWGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicCmpxchgGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicCmpxchgGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicCmpxchgGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicCmpxchgGetExpectedForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicCmpxchgGetExpectedForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicCmpxchgGetExpected(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicCmpxchgGetReplacementForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicCmpxchgGetReplacementForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicCmpxchgGetReplacement(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicWaitGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicWaitGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicWaitGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicWaitGetExpectedForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicWaitGetExpectedForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicWaitGetExpected(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicWaitGetTimeoutForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicWaitGetTimeoutForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicWaitGetTimeout(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicNotifyGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicNotifyGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicNotifyGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenAtomicNotifyGetNotifyCountForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenAtomicNotifyGetNotifyCountForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenAtomicNotifyGetNotifyCount(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDExtractGetVecForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDExtractGetVecForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDExtractGetVec(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDReplaceGetVecForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDReplaceGetVecForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDReplaceGetVec(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDReplaceGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDReplaceGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDReplaceGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDShuffleGetLeftForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDShuffleGetLeftForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDShuffleGetLeft(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDShuffleGetRightForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDShuffleGetRightForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDShuffleGetRight(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDTernaryGetAForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDTernaryGetAForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDTernaryGetA(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDTernaryGetBForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDTernaryGetBForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDTernaryGetB(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDTernaryGetCForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDTernaryGetCForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDTernaryGetC(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDShiftGetVecForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDShiftGetVecForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDShiftGetVec(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDShiftGetShiftForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDShiftGetShiftForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDShiftGetShift(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDLoadGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDLoadGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDLoadGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDLoadStoreLaneGetPtrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDLoadStoreLaneGetPtrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDLoadStoreLaneGetPtr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenSIMDLoadStoreLaneGetVecForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenSIMDLoadStoreLaneGetVecForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenSIMDLoadStoreLaneGetVec(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryInitGetDestForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryInitGetDestForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryInitGetDest(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryInitGetOffsetForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryInitGetOffsetForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryInitGetOffset(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryInitGetSizeForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryInitGetSizeForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryInitGetSize(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryCopyGetDestForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryCopyGetDestForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryCopyGetDest(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryCopyGetSourceForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryCopyGetSourceForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryCopyGetSource(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryCopyGetSizeForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryCopyGetSizeForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryCopyGetSize(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryFillGetDestForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryFillGetDestForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryFillGetDest(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryFillGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryFillGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryFillGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenMemoryFillGetSizeForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenMemoryFillGetSizeForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenMemoryFillGetSize(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefIsNullGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefIsNullGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefIsNullGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefFuncGetFuncForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefFuncGetFuncForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefFuncGetFunc(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefEqGetLeftForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefEqGetLeftForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefEqGetLeft(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefEqGetRightForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefEqGetRightForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefEqGetRight(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenTryGetBodyForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTryGetBodyForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenTryGetBody(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenTryGetNumCatchBodiesForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenTryGetNumCatchBodiesForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenTryGetNumCatchBodies(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenTryGetCatchBodyAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTryGetCatchBodyAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenTryGetCatchBodyAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenThrowGetTagForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenThrowGetTagForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenThrowGetTag(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenThrowGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenThrowGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenThrowGetNumOperands(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenThrowGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenThrowGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenThrowGetOperandAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint32_t BinaryenTupleMakeGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenTupleMakeGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenTupleMakeGetNumOperands(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenTupleMakeGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTupleMakeGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenTupleMakeGetOperandAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenTupleExtractGetTupleForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenTupleExtractGetTupleForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenTupleExtractGetTuple(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefI31GetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefI31GetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefI31GetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenI31GetGetI31ForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenI31GetGetI31ForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenI31GetGetI31(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenCallRefGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenCallRefGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenCallRefGetNumOperands(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenCallRefGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenCallRefGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCallRefGetOperandAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenCallRefGetTargetForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenCallRefGetTargetForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenCallRefGetTarget(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefTestGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefTestGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefTestGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefCastGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefCastGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefCastGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBrOnGetNameForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBrOnGetNameForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBrOnGetName(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenBrOnGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenBrOnGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenBrOnGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenStructNewGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenStructNewGetNumOperandsForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenStructNewGetNumOperands(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenStructNewGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStructNewGetOperandAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenStructNewGetOperandAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenStructGetGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStructGetGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStructGetGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenStructGetGetIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenStructGetGetIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenStructGetGetIndex(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenStructSetGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStructSetGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStructSetGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenStructSetGetIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenStructSetGetIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenStructSetGetIndex(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenStructSetGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStructSetGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStructSetGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayNewGetSizeForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayNewGetSizeForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayNewGetSize(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayNewGetInitForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayNewGetInitForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayNewGetInit(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenArrayNewFixedGetNumValuesForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenArrayNewFixedGetNumValuesForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenArrayNewFixedGetNumValues(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenArrayNewFixedGetValueAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayNewFixedGetValueAtForLink(uint64_t expr, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
       BinaryenArrayNewFixedGetValueAt(reinterpret_cast<BinaryenExpressionRef>(expr), index));
 }
-uint64_t BinaryenArrayGetGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayGetGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayGetGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayGetGetIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayGetGetIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayGetGetIndex(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArraySetGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArraySetGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArraySetGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArraySetGetIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArraySetGetIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArraySetGetIndex(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArraySetGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArraySetGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArraySetGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayLenGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayLenGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayLenGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayCopyGetDestRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayCopyGetDestRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayCopyGetDestRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayCopyGetDestIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayCopyGetDestIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayCopyGetDestIndex(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayCopyGetSrcRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayCopyGetSrcRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayCopyGetSrcRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayCopyGetSrcIndexForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayCopyGetSrcIndexForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayCopyGetSrcIndex(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenArrayCopyGetLengthForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenArrayCopyGetLengthForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenArrayCopyGetLength(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenRefAsGetValueForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenRefAsGetValueForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenRefAsGetValue(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringNewGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringNewGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringNewGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringNewGetStartForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringNewGetStartForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringNewGetStart(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringNewGetEndForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringNewGetEndForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringNewGetEnd(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringMeasureGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringMeasureGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringMeasureGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringEncodeGetStrForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringEncodeGetStrForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringEncodeGetStr(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringEncodeGetArrayForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringEncodeGetArrayForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringEncodeGetArray(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringEncodeGetStartForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringEncodeGetStartForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringEncodeGetStart(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringConcatGetLeftForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringConcatGetLeftForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringConcatGetLeft(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringConcatGetRightForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringConcatGetRightForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringConcatGetRight(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringEqGetLeftForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringEqGetLeftForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringEqGetLeft(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringEqGetRightForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringEqGetRightForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringEqGetRight(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringWTF16GetGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringWTF16GetGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringWTF16GetGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringWTF16GetGetPosForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringWTF16GetGetPosForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringWTF16GetGetPos(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringSliceWTFGetRefForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringSliceWTFGetRefForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringSliceWTFGetRef(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringSliceWTFGetStartForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringSliceWTFGetStartForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringSliceWTFGetStart(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint64_t BinaryenStringSliceWTFGetEndForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenStringSliceWTFGetEndForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenStringSliceWTFGetEnd(reinterpret_cast<BinaryenExpressionRef>(expr)));
 }
-uint32_t BinaryenGetNumGlobalsForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenGetNumGlobalsForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenGetNumGlobals(reinterpret_cast<BinaryenModuleRef>(module));
 }
-uint64_t BinaryenGetGlobalByIndexForLink(uint64_t module, uint32_t index, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGetGlobalByIndexForLink(uint64_t module, uint32_t index, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGetGlobalByIndex(reinterpret_cast<BinaryenModuleRef>(module), index));
 }
-uint64_t BinaryenGlobalGetInitExprForLink(uint64_t global, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenGlobalGetInitExprForLink(uint64_t global, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenGlobalGetInitExpr(reinterpret_cast<BinaryenGlobalRef>(global)));
 }
-uint32_t BinaryenModuleValidateForLink(uint64_t module, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenModuleValidateForLink(uint64_t module, [[maybe_unused]] vb::WasmModule *ctx) {
   return static_cast<uint32_t>(BinaryenModuleValidate(reinterpret_cast<BinaryenModuleRef>(module)));
 }
-uint32_t BinaryenStoreGetOffsetForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenStoreGetOffsetForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenStoreGetOffset(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint32_t BinaryenStoreGetBytesForLink(uint64_t expr, [[maybe_unused]] void *ctx) {
+uint32_t BinaryenStoreGetBytesForLink(uint64_t expr, [[maybe_unused]] vb::WasmModule *ctx) {
   return BinaryenStoreGetBytes(reinterpret_cast<BinaryenExpressionRef>(expr));
 }
-uint64_t BinaryenFunctionGetNameForLink(uint64_t func, [[maybe_unused]] void *ctx) {
+uint64_t BinaryenFunctionGetNameForLink(uint64_t func, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(BinaryenFunctionGetName(reinterpret_cast<BinaryenFunctionRef>(func)));
 }
-void BinaryenStoreSetPtrForLink(uint64_t expr, uint64_t ptr, [[maybe_unused]] void *ctx) {
+void BinaryenStoreSetPtrForLink(uint64_t expr, uint64_t ptr, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenStoreSetPtr(reinterpret_cast<BinaryenExpressionRef>(expr), reinterpret_cast<BinaryenExpressionRef>(ptr));
 }
-void BinaryenModuleSetTypeNameForLink(uint64_t module, uint64_t heapType, uint64_t name, [[maybe_unused]] void *ctx) {
+void BinaryenModuleSetTypeNameForLink(uint64_t module, uint64_t heapType, uint64_t name,
+                                      [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenModuleSetTypeName(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenHeapType>(heapType),
                             reinterpret_cast<const char *>(name));
 }
@@ -1032,14 +1048,28 @@ void BinaryenModuleSetTypeNameForLink(uint64_t module, uint64_t heapType, uint64
 
 namespace {
 
-uint32_t loadU8(uint64_t ptr, [[maybe_unused]] void *ctx) { return reinterpret_cast<uint8_t *>(ptr)[0]; }
-uint32_t loadI32(uint64_t ptr, [[maybe_unused]] void *ctx) { return reinterpret_cast<int32_t *>(ptr)[0]; }
-void store8(uint64_t ptr, uint32_t value, [[maybe_unused]] void *ctx) { reinterpret_cast<uint8_t *>(ptr)[0] = value; }
-void store32(uint64_t ptr, uint32_t value, [[maybe_unused]] void *ctx) { reinterpret_cast<uint32_t *>(ptr)[0] = value; }
-void store64(uint64_t ptr, uint64_t value, [[maybe_unused]] void *ctx) { reinterpret_cast<uint64_t *>(ptr)[0] = value; }
+uint32_t loadU8(uint64_t ptr, [[maybe_unused]] vb::WasmModule *ctx) { return reinterpret_cast<uint8_t *>(ptr)[0]; }
+uint32_t loadI32(uint64_t ptr, [[maybe_unused]] vb::WasmModule *ctx) { return reinterpret_cast<int32_t *>(ptr)[0]; }
+void store8(uint64_t ptr, uint32_t value, [[maybe_unused]] vb::WasmModule *ctx) {
+  reinterpret_cast<uint8_t *>(ptr)[0] = value;
+}
+void store32(uint64_t ptr, uint32_t value, [[maybe_unused]] vb::WasmModule *ctx) {
+  reinterpret_cast<uint32_t *>(ptr)[0] = value;
+}
+void store64(uint64_t ptr, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
+  reinterpret_cast<uint64_t *>(ptr)[0] = value;
+}
 
-uint64_t malloc(uint32_t size, [[maybe_unused]] void *ctx) { return reinterpret_cast<uint64_t>(std::malloc(size)); }
-void free(uint64_t ptr, [[maybe_unused]] void *ctx) { std::free(reinterpret_cast<void *>(ptr)); }
+uint64_t malloc(uint32_t size, [[maybe_unused]] vb::WasmModule *ctx) {
+  void *p = std::malloc(size);
+  static_cast<FrontendCompiler *>(ctx->getContext())->allocedPtrs_.insert(p);
+  return reinterpret_cast<uint64_t>(p);
+}
+void free(uint64_t ptr, [[maybe_unused]] vb::WasmModule *ctx) {
+  void *p = reinterpret_cast<void *>(ptr);
+  static_cast<FrontendCompiler *>(ctx->getContext())->allocedPtrs_.erase(p);
+  std::free(p);
+}
 
 std::string getAsString(uint32_t ptr, vb::WasmModule *ctx) {
   if (ptr == 0U)
@@ -1091,9 +1121,9 @@ void trace(uint32_t ptr, uint32_t n, double d1, double d2, double d3, double d4,
 }
 
 } // namespace
-} // namespace export_to_asc
+} // namespace warpo::frontend::export_to_asc
 
-const std::vector<vb::NativeSymbol> warpo::frontend ::linkedAPI{
+const std::vector<vb::NativeSymbol> warpo::frontend::linkedAPI{
     STATIC_LINK("env", "abort", export_to_asc::abort),
     STATIC_LINK("env", "trace", export_to_asc::trace),
 

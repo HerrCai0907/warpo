@@ -60,8 +60,8 @@ static cli::Opt<bool> TestOnlyControlGroup{
 };
 
 struct PostLower : public wasm::Pass {
-  std::shared_ptr<StackPositions> stackPosition_;
-  explicit PostLower(std::shared_ptr<StackPositions> stackPosition) : stackPosition_(stackPosition) {
+  std::shared_ptr<StackPositions const> stackPosition_;
+  explicit PostLower(std::shared_ptr<StackPositions const> stackPosition) : stackPosition_(stackPosition) {
     name = "PostLower";
   }
   void run(wasm::Module *m) override {
@@ -115,14 +115,12 @@ void OptLower::run(wasm::Module *m) {
 
   ModuleLevelSSAMap const moduleLevelSSAMap = ModuleLevelSSAMap::create(m);
 
-  std::shared_ptr<CallGraph const> cg = CallGraphBuilder::addToPass(runner);
+  std::shared_ptr<CallGraph const> const cg = CallGraphBuilder::addToPass(runner);
 
-  std::shared_ptr<LeafFunc> leafFunc;
-  if (!NoLeafFunctionFilter.get()) {
-    leafFunc = LeafFunctionCollector::addToPass(runner, cg);
-  }
+  std::shared_ptr<LeafFunc const> const leafFunc =
+      NoLeafFunctionFilter.get() ? nullptr : LeafFunctionCollector::addToPass(runner, cg);
 
-  std::shared_ptr<ObjLivenessInfo> livenessInfo = ObjLivenessAnalyzer::addToPass(runner, moduleLevelSSAMap);
+  std::shared_ptr<ObjLivenessInfo> const livenessInfo = ObjLivenessAnalyzer::addToPass(runner, moduleLevelSSAMap);
 
   if (!NoMergeSSA.get()) {
     // now merge ssa should be done firstly, it is depends on liveness info as local's possible values.
@@ -131,15 +129,13 @@ void OptLower::run(wasm::Module *m) {
     MergeSSA::addToPass(runner, moduleLevelSSAMap, livenessInfo);
   }
 
-  if (!NoLeafFunctionFilter.get()) {
-    assert(leafFunc != nullptr);
-    runner.add(std::unique_ptr<wasm::Pass>(new LeafFunctionFilter(leafFunc, livenessInfo)));
-  }
+  LeafFunctionFilter::addToPass(runner, leafFunc, livenessInfo);
 
   StackAssigner::Mode const stackAssignerMode =
       NoOptimizedStackPositionAssigner.get() ? StackAssigner::Mode::Vanilla : StackAssigner::Mode::GreedyConflictGraph;
-  std::shared_ptr<StackPositions> stackPositions = StackAssigner::addToPass(runner, stackAssignerMode, livenessInfo);
-  std::shared_ptr<InsertPositionHints> const stackInsertPositions =
+  std::shared_ptr<StackPositions const> const stackPositions =
+      StackAssigner::addToPass(runner, stackAssignerMode, livenessInfo);
+  std::shared_ptr<InsertPositionHints const> const stackInsertPositions =
       NoShrinkWrap.get() ? ShrinkWrapAnalysis::dummy(runner) : ShrinkWrapAnalysis::addToPass(runner, livenessInfo);
   runner.add(std::unique_ptr<wasm::Pass>(
       new PrologEpilogInserter(stackInsertPositions, MaxShadowStackOffsetsFromStackPositions::create(stackPositions))));

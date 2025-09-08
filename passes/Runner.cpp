@@ -24,6 +24,7 @@
 #include "warpo/common/OptLevel.hpp"
 #include "warpo/passes/Runner.hpp"
 #include "warpo/support/FileSystem.hpp"
+#include "warpo/support/Statistics.hpp"
 #include "wasm-binary.h"
 #include "wasm-features.h"
 #include "wasm-stack.h"
@@ -32,6 +33,7 @@
 namespace warpo {
 
 static void ensureValidate(wasm::Module &m) {
+  support::PerfRAII const r{support::PerfItemKind::Validation};
   if (!wasm::WasmValidator{}.validate(m))
     throw std::logic_error("validate error");
 }
@@ -65,6 +67,7 @@ static std::unique_ptr<wasm::PassRunner> createPassRunner(wasm::Module *const m)
 
 static void lowering(wasm::Module *const m) {
   {
+    support::PerfRAII const r{support::PerfItemKind::Lowering};
     std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
     if (passRunner->options.shrinkLevel > 0 || passRunner->options.optimizeLevel > 0)
       passRunner->add(std::unique_ptr<wasm::Pass>{new passes::gc::OptLower()});
@@ -79,6 +82,7 @@ static void lowering(wasm::Module *const m) {
 
 static void optimize(wasm::Module *const m) {
   {
+    support::PerfRAII const r{support::PerfItemKind::Optimization};
     std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
     passRunner->addDefaultOptimizationPasses();
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createAdvancedInliningPass()});
@@ -88,6 +92,7 @@ static void optimize(wasm::Module *const m) {
   ensureValidate(*m);
 #endif
   {
+    support::PerfRAII const r{support::PerfItemKind::Optimization};
     std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createExtractMostFrequentlyUsedGlobalsPass()});
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createConditionalReturnPass()});
@@ -97,6 +102,7 @@ static void optimize(wasm::Module *const m) {
   ensureValidate(*m);
 #endif
   {
+    support::PerfRAII const r{support::PerfItemKind::Optimization};
     std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
     passRunner->setDebug(false);
     passRunner->addDefaultOptimizationPasses();

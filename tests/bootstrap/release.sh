@@ -4,6 +4,7 @@ set -e
 
 echo "first build"
 ./build/tools/asc/warpo_asc assemblyscript/src/glue/wasm/index.ts assemblyscript/src/index-wasm.ts \
+  --stats \
   --optimizeLevel 3 --shrinkLevel 2 \
   --disable-feature nontrapping-f2i \
   --initialMemory 768 \
@@ -13,6 +14,7 @@ echo "first build"
 
 echo "second build"
 ./build/tools/asc/warpo_asc assemblyscript/src/glue/wasm/index.ts assemblyscript/src/index-wasm.ts \
+  --stats \
   --optimizeLevel 3 --shrinkLevel 2 \
   --disable-feature nontrapping-f2i \
   --initialMemory 768 \
@@ -23,6 +25,7 @@ echo "second build"
   
 echo "third build"
 ./build/tools/asc/warpo_asc assemblyscript/src/glue/wasm/index.ts assemblyscript/src/index-wasm.ts \
+  --stats \
   --optimizeLevel 3 --shrinkLevel 2 \
   --disable-feature nontrapping-f2i \
   --initialMemory 768 \

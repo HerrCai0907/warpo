@@ -176,7 +176,7 @@ FrontendCompiler::Dependency FrontendCompiler::getDependencyForUserCode(std::str
 }
 FrontendCompiler::Dependency FrontendCompiler::getDependency(std::string const &nextFileInternalPath, int32_t program,
                                                              int32_t nextFile) {
-  support::PerformanceStatisticRange const r{support::PerfItemKind::CompilationHIR_Parsing_DepsResolve};
+  support::PerfRAII const r{support::PerfItemKind::CompilationHIR_Parsing_DepsResolve};
   if (nextFileInternalPath.starts_with(libraryPrefix)) {
     std::string const plainName = nextFileInternalPath.substr(libraryPrefix.size());
     if (embed_library_sources.contains(plainName)) {
@@ -237,12 +237,13 @@ FrontendCompiler::FrontendCompiler(Config const &config)
   m.setContext(this);
 
   if (config.ascWasmPath) [[unlikely]] {
+    support::PerfRAII const r{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
     std::string const wasmBytes = readBinaryFile(*config.ascWasmPath);
     m.initFromBytecode(
         vb::Span<const uint8_t>{reinterpret_cast<uint8_t const *>(wasmBytes.data()), wasmBytes.size()},
         vb::Span<vb::NativeSymbol const>{warpo::frontend::linkedAPI.data(), warpo::frontend::linkedAPI.size()});
   } else {
-    support::PerformanceStatisticRange const range{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
+    support::PerfRAII const r{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
     static vb::WasmModule::CompileResult const embedJitCode = m.compile(
         vb::Span<const uint8_t>{embed_asc_wasm.data(), embed_asc_wasm.size()},
         vb::Span<vb::NativeSymbol const>{warpo::frontend::linkedAPI.data(), warpo::frontend::linkedAPI.size()});
@@ -256,7 +257,7 @@ FrontendCompiler::FrontendCompiler(Config const &config)
 warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::string> const &entryFilePaths,
                                                              Config const &config) {
   try {
-    support::PerformanceStatisticRange initStat{support::PerfItemKind::CompilationHIR_Init};
+    support::PerfRAII initStat{support::PerfItemKind::CompilationHIR_Init};
     m.start(stackTop);
     m.callExportedFunctionWithName<0>(stackTop, "_initialize");
 
@@ -295,8 +296,8 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
     m.callExportedFunctionWithName<1>(stackTop, "__pin", program);
     initStat.release();
 
-    support::PerformanceStatisticRange parseStat{support::PerfItemKind::CompilationHIR_Parsing};
-    support::PerformanceStatisticRange parseLibStat{support::PerfItemKind::CompilationHIR_Parsing_BuiltinLib};
+    support::PerfRAII parseStat{support::PerfItemKind::CompilationHIR_Parsing};
+    support::PerfRAII parseLibStat{support::PerfItemKind::CompilationHIR_Parsing_BuiltinLib};
     for (auto const &[libName, libSource] : warpo::frontend::embed_library_sources) {
       // in sub-directory: imported on demand
       if (libName.find('/') != std::string::npos)
@@ -327,7 +328,7 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
       return {.m = nullptr, .errorMessage = errorMessage_};
     parseStat.release();
 
-    support::PerformanceStatisticRange compileStat{support::PerfItemKind::CompilationHIR_Compilation};
+    support::PerfRAII compileStat{support::PerfItemKind::CompilationHIR_Compilation};
     m.callExportedFunctionWithName<0>(stackTop, "initializeProgram", program);
     int32_t const compiled = m.callExportedFunctionWithName<1>(stackTop, "compile", program)[0].i32;
     if (checkDiag(program, config.useColorfulDiagMessage))

@@ -1,0 +1,22 @@
+#ifndef PERF_ITEM_KIND_CHILD
+#error "PERF_ITEM_KIND_CHILD must be defined"
+#endif
+#ifndef PERF_ITEM_KIND_TOP
+#error "PERF_ITEM_KIND_TOP must be defined"
+#endif
+
+PERF_ITEM_KIND_TOP(CompilationHIR)
+PERF_ITEM_KIND_TOP(Optimization)
+PERF_ITEM_KIND_TOP(Validation)
+PERF_ITEM_KIND_TOP(Lowering)
+
+PERF_ITEM_KIND_CHILD(CompilationHIR, PrepareWASMModule)
+PERF_ITEM_KIND_CHILD(CompilationHIR, Init)
+PERF_ITEM_KIND_CHILD(CompilationHIR, Parsing)
+PERF_ITEM_KIND_CHILD(CompilationHIR, Compilation)
+
+PERF_ITEM_KIND_CHILD(CompilationHIR_Parsing, DepsResolve)
+PERF_ITEM_KIND_CHILD(CompilationHIR_Parsing, BuiltinLib)
+
+#undef PERF_ITEM_KIND_CHILD
+#undef PERF_ITEM_KIND_TOP

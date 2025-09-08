@@ -96,7 +96,7 @@ namespace warpo {
 void frontend::init() { FrontendCompiler::init(); }
 
 frontend::CompilationResult frontend::compile(std::vector<std::string> const &entryFilePaths, Config const &config) {
-  support::PerformanceStatisticRange const range(support::PerfItemKind::CompilationHIR);
+  support::PerfRAII const r(support::PerfItemKind::CompilationHIR);
   FrontendCompiler compiler{config};
   return compiler.compile(entryFilePaths, config);
 }

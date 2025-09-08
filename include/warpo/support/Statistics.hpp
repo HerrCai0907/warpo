@@ -5,28 +5,19 @@
 namespace warpo::support {
 
 enum class PerfItemKind {
-  Root,
-
-  CompilationHIR,
-  Optimization,
-
-  CompilationHIR_PrepareWASMModule,
-  CompilationHIR_Init,
-  CompilationHIR_Parsing,
-  CompilationHIR_Compilation,
-
-  CompilationHIR_Parsing_DepsResolve,
-  CompilationHIR_Parsing_BuiltinLib,
+#define PERF_ITEM_KIND_TOP(name) name,
+#define PERF_ITEM_KIND_CHILD(parent, name) parent##_##name,
+#include "warpo/support/StatisticsKinds.def"
 };
 
-class PerformanceStatisticRange {
+class PerfRAII {
   bool free_ = false;
   PerfItemKind item_;
   std::chrono::nanoseconds startTime_;
 
 public:
-  explicit PerformanceStatisticRange(PerfItemKind item);
-  ~PerformanceStatisticRange();
+  explicit PerfRAII(PerfItemKind item);
+  ~PerfRAII();
 
   void release();
 };

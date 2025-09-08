@@ -35,24 +35,13 @@ struct PerformanceData {
 
 static const char *toString(PerfItemKind kind) {
   switch (kind) {
-  case PerfItemKind::Root:
-    return "Root";
-  case PerfItemKind::CompilationHIR:
-    return "CompilationHIR";
-  case PerfItemKind::Optimization:
-    return "Optimization";
-  case PerfItemKind::CompilationHIR_PrepareWASMModule:
-    return "PrepareWASMModule";
-  case PerfItemKind::CompilationHIR_Init:
-    return "Init";
-  case PerfItemKind::CompilationHIR_Parsing:
-    return "Parsing";
-  case PerfItemKind::CompilationHIR_Compilation:
-    return "Compilation";
-  case PerfItemKind::CompilationHIR_Parsing_DepsResolve:
-    return "DepsResolve";
-  case PerfItemKind::CompilationHIR_Parsing_BuiltinLib:
-    return "BuiltinLib";
+#define PERF_ITEM_KIND_TOP(name)                                                                                       \
+  case PerfItemKind::name:                                                                                             \
+    return #name;
+#define PERF_ITEM_KIND_CHILD(parent, name)                                                                             \
+  case PerfItemKind::parent##_##name:                                                                                  \
+    return #parent "_" #name;
+#include "warpo/support/StatisticsKinds.def"
   }
   return "Unknown";
 }
@@ -103,52 +92,30 @@ public:
   }
 
   ~PerformanceCollector() {
-    std::map<PerfItemKind, std::set<PerfItemKind>> const nested{
-        std::pair<PerfItemKind, std::set<PerfItemKind>>{
-            PerfItemKind::Root,
-            {
-                PerfItemKind::CompilationHIR,
-                PerfItemKind::Optimization,
-            },
-        },
-        std::pair<PerfItemKind, std::set<PerfItemKind>>{
-            PerfItemKind::CompilationHIR,
-            {
-                PerfItemKind::CompilationHIR_Compilation,
-                PerfItemKind::CompilationHIR_Init,
-                PerfItemKind::CompilationHIR_Parsing,
-                PerfItemKind::CompilationHIR_PrepareWASMModule,
-            },
-        },
-        std::pair<PerfItemKind, std::set<PerfItemKind>>{
-            PerfItemKind::CompilationHIR_Parsing,
-            {
-                PerfItemKind::CompilationHIR_Parsing_DepsResolve,
-                PerfItemKind::CompilationHIR_Parsing_BuiltinLib,
-            },
-        },
-        std::pair<PerfItemKind, std::set<PerfItemKind>>{
-            PerfItemKind::Optimization,
-            {},
-        },
-    };
-    printNestedPerformanceData(0U, PerfItemKind::Root, nested);
+    std::map<PerfItemKind, std::set<PerfItemKind>> nested{};
+#define PERF_ITEM_KIND_TOP(name)
+#define PERF_ITEM_KIND_CHILD(parent, name) nested[PerfItemKind::parent].insert(PerfItemKind::parent##_##name);
+#include "warpo/support/StatisticsKinds.def"
+
+#define PERF_ITEM_KIND_TOP(name) printNestedPerformanceData(0U, PerfItemKind::name, nested);
+#define PERF_ITEM_KIND_CHILD(parent, name)
+#include "warpo/support/StatisticsKinds.def"
   }
 };
 
 } // namespace
 
-PerformanceStatisticRange::PerformanceStatisticRange(PerfItemKind item) : item_(item), startTime_(now()) {
+PerfRAII::PerfRAII(PerfItemKind item) : item_(item), startTime_(now()) {
   if (!EnableStatisticsOption.get())
     return;
 }
 
-PerformanceStatisticRange::~PerformanceStatisticRange() {
+PerfRAII::~PerfRAII() {
   if (!free_)
     release();
 }
 
-void PerformanceStatisticRange::release() {
+void PerfRAII::release() {
   if (!EnableStatisticsOption.get())
     return;
   std::chrono::nanoseconds endTime = now();

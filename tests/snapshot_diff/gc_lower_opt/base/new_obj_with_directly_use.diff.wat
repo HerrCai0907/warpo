@@ -1,0 +1,21 @@
+;; ====================
+(func $tests/snapshot_diff/gc_lower_opt/base/new_obj_with_directly_use/_start (type $func.0 (func))
+;; =========add========
+  block ;;none
+      i32.const 4
+    call $~lib/rt/__decrease_sp
+;; ====================
+          i32.const 0
+        call $tests/snapshot_diff/common_lib/normal/Normal#constructor
+;; ======remove=======
+;;  call $~lib/rt/__tmptostack
+;; =========add========
+      call $~lib/rt/__tostack<0>
+;; ====================
+    call $tests/snapshot_diff/gc_lower_opt/base/new_obj_with_directly_use/foo
+;; =========add========
+      i32.const 4
+    call $~lib/rt/__increase_sp
+  end
+;; ====================
+)

@@ -197,4 +197,18 @@ static inline M<wasm::If> hasFalse() {
 
 constexpr IsMatcherImpl<wasm::Return, wasm::Expression> isReturn;
 
+constexpr IsMatcherImpl<wasm::Block, wasm::Expression> isBlock;
+namespace block {
+static inline M<wasm::Block> has(size_t n) {
+  return M<wasm::Block>([n](wasm::Block const &expr, Context &ctx) -> bool { return expr.list.size() == n; });
+}
+static inline M<wasm::Block> at(size_t n, M<wasm::Expression> const &m) {
+  return M<wasm::Block>([n, m](wasm::Block const &expr, Context &ctx) -> bool {
+    if (n >= expr.list.size())
+      return false;
+    return m(*expr.list[n], ctx);
+  });
+}
+} // namespace block
+
 } // namespace warpo::passes::matcher

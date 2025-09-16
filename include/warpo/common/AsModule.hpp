@@ -19,6 +19,7 @@
 #include <binaryen/src/binaryen-c.h>
 #include <compare>
 #include <cstddef>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -44,7 +45,7 @@ public:
   }
 
   BinaryenModule() noexcept : BinaryenModule(nullptr) {}
-  BinaryenModule(BinaryenModuleRef ref) noexcept : ref_(ref) {}
+  explicit BinaryenModule(BinaryenModuleRef ref) noexcept : ref_(ref) {}
   ~BinaryenModule() noexcept {
     if (ref_ != nullptr)
       BinaryenModuleDispose(ref_);
@@ -74,14 +75,21 @@ public:
   }
 };
 
+struct ImmutableDataElementRanges : private std::set<DataElementRange> {
+  using std::set<DataElementRange>::insert;
+  bool contains(uint32_t offset, uint32_t size) const;
+};
+
 class AsModule {
   BinaryenModule raw_;
 
 public:
-  std::set<DataElementRange> immutableRanges_;
+  std::shared_ptr<ImmutableDataElementRanges> immutableRanges_;
   // TODO: more information fields
 
   AsModule() = default;
+  explicit AsModule(BinaryenModuleRef ref) : raw_{ref}, immutableRanges_{nullptr} {}
+
   void set(BinaryenModule raw) { raw_ = std::move(raw); }
   BinaryenModuleRef get() const { return raw_.get(); }
   bool valid() const { return raw_ != nullptr; }

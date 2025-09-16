@@ -15,10 +15,12 @@
 #include "ExtractMostFrequentlyUsedGlobals.hpp"
 #include "GC/FastLower.hpp"
 #include "GC/OptLower.hpp"
+#include "ImmutableLoadEliminating.hpp"
 #include "Runner.hpp"
 #include "binaryen-c.h"
 #include "parser/wat-parser.h"
 #include "pass.h"
+#include "warpo/common/AsModule.hpp"
 #include "warpo/common/DebugLevel.hpp"
 #include "warpo/common/Features.hpp"
 #include "warpo/common/OptLevel.hpp"
@@ -80,49 +82,50 @@ static void lowering(wasm::Module *const m) {
 #endif
 }
 
-static void optimize(wasm::Module *const m) {
+static void optimize(AsModule const &m) {
   {
     support::PerfRAII const r{support::PerfItemKind::Optimization};
-    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m.get());
     passRunner->addDefaultOptimizationPasses();
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createAdvancedInliningPass()});
     passRunner->run();
   }
 #ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m);
+  ensureValidate(*m.get());
 #endif
   {
     support::PerfRAII const r{support::PerfItemKind::Optimization};
-    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m.get());
+    passRunner->add(std::unique_ptr<wasm::Pass>{passes::createImmutableLoadEliminatingPass(m.immutableRanges_)});
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createExtractMostFrequentlyUsedGlobalsPass()});
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createConditionalReturnPass()});
     passRunner->run();
   }
 #ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m);
+  ensureValidate(*m.get());
 #endif
   {
     support::PerfRAII const r{support::PerfItemKind::Optimization};
-    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m);
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m.get());
     passRunner->setDebug(false);
     passRunner->addDefaultOptimizationPasses();
     passRunner->run();
   }
-  ensureValidate(*m);
+  ensureValidate(*m.get());
 }
 
-passes::Output passes::runOnModule(BinaryenModuleRef const m, Config const &config) {
+passes::Output passes::runOnModule(AsModule const &m, Config const &config) {
 #ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m);
+  ensureValidate(*m.get());
 #endif
-  lowering(m);
+  lowering(m.get());
   if (common::getOptimizationLevel() > 0U || common::getShrinkLevel() > 0U)
     optimize(m);
 
   // wasm and source map
   wasm::BufferWithRandomAccess buffer;
   wasm::PassOptions options = wasm::PassOptions::getWithoutOptimization();
-  wasm::WasmBinaryWriter writer(m, buffer, options);
+  wasm::WasmBinaryWriter writer(m.get(), buffer, options);
   std::stringstream sourceMapStream;
   if (common::isEmitDebugLineInfo()) {
     assert(!config.sourceMapURL.empty());
@@ -134,7 +137,7 @@ passes::Output passes::runOnModule(BinaryenModuleRef const m, Config const &conf
 
   // wat
   std::stringstream ss{};
-  wasm::printStackIR(ss, m, wasm::PassOptions::getWithoutOptimization());
+  wasm::printStackIR(ss, m.get(), wasm::PassOptions::getWithoutOptimization());
 
   return {
       .wat = std::move(ss).str(),
@@ -145,7 +148,7 @@ passes::Output passes::runOnModule(BinaryenModuleRef const m, Config const &conf
 
 passes::Output passes::runOnWat(std::string const &input, Config const &config) {
   std::unique_ptr<wasm::Module> m = passes::loadWat(input);
-  return runOnModule(m.get(), config);
+  return runOnModule(AsModule{m.release()}, config);
 }
 
 static std::string removeWasmExt(std::string const &path) {
@@ -158,7 +161,7 @@ static std::string removeWasmExt(std::string const &path) {
   }
 }
 
-void passes::runAndEmit(BinaryenModuleRef const m, std::string const &outputPath) {
+void passes::runAndEmit(AsModule const &m, std::string const &outputPath) {
   std::string const outputPathWithoutExt = removeWasmExt(outputPath);
   ensureFileDirectory(outputPathWithoutExt);
 
@@ -194,8 +197,8 @@ void passes::runAndEmit(std::string const &inputPath, std::string const &outputP
   if (!ifstream.good())
     throw std::runtime_error{fmt::format("failed to open file: {}", inputPath)};
   std::string const wat{std::istreambuf_iterator<char>{ifstream}, {}};
-  std::unique_ptr<wasm::Module> const m = loadWat(wat);
-  runAndEmit(m.get(), outputPath);
+  std::unique_ptr<wasm::Module> m = loadWat(wat);
+  runAndEmit(AsModule{m.release()}, outputPath);
 }
 
 } // namespace warpo

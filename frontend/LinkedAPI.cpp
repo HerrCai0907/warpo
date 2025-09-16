@@ -16,6 +16,7 @@ std::vector<vb::NativeSymbol> createLinkedAPI() {
   append(linkedAPI, createAssemblyscriptAPI());
   append(linkedAPI, createCppWrapperAPI());
   append(linkedAPI, createBinaryenLinkedAPI());
+  append(linkedAPI, createOptAPI());
   return linkedAPI;
 }
 

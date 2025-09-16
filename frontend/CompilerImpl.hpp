@@ -30,7 +30,6 @@ class FrontendCompiler {
   std::map<std::string, std::filesystem::path> packageRootMap_{};
   size_t errorCount_ = 0;
   std::string errorMessage_;
-  AsModule asModule_;
 
   int32_t allocString(std::string_view str);
   std::u16string utf8ToUtf16(std::string const &utf8Str);
@@ -67,6 +66,7 @@ public:
   CompilationResult compile(std::vector<std::string> const &entryFilePaths, Config const &config);
 
   std::set<void *> allocedPtrs_;
+  AsModule asModule_;
 };
 
 } // namespace warpo::frontend

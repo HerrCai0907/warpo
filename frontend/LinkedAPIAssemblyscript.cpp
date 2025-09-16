@@ -1,3 +1,4 @@
+#include <bit>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -47,7 +48,7 @@ void traceForLink(uint32_t ptr, uint32_t n, double d1, double d2, double d3, dou
                   vb::WasmModule *ctx) {
   std::stringstream ss{};
   ss << getAsString(ptr, ctx);
-  for (size_t i = 0; i < n; i++) {
+  for (size_t i = 1U; i <= n; i++) {
     switch (i) {
     case 1:
       ss << " " << d1;

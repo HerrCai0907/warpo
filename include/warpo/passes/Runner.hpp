@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "warpo/common/AsModule.hpp"
+
 namespace warpo::passes {
 
 struct Output {
@@ -20,9 +22,9 @@ struct Config {
 void init();
 
 Output runOnWat(std::string const &input, Config const &config);
-Output runOnModule(BinaryenModuleRef const m, Config const &config);
+Output runOnModule(AsModule const &m, Config const &config);
 
-void runAndEmit(BinaryenModuleRef const m, std::string const &outputPath);
+void runAndEmit(AsModule const &m, std::string const &outputPath);
 void runAndEmit(std::string const &inputPath, std::string const &outputPath);
 
 } // namespace warpo::passes

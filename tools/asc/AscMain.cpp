@@ -32,7 +32,7 @@ void ascMain(int argc, const char *argv[]) {
     fmt::println("{}", result.errorMessage);
     throw std::runtime_error("compilation failed");
   }
-  passes::runAndEmit(result.m.get(), outputPath.get());
+  passes::runAndEmit(result.m, outputPath.get());
 }
 
 } // namespace warpo

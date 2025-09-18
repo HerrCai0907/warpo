@@ -16,6 +16,7 @@
 #include "GC/FastLower.hpp"
 #include "GC/OptLower.hpp"
 #include "ImmutableLoadEliminating.hpp"
+#include "InsertTracePoint.hpp"
 #include "Runner.hpp"
 #include "binaryen-c.h"
 #include "parser/wat-parser.h"
@@ -82,6 +83,18 @@ static void lowering(wasm::Module *const m) {
 #endif
 }
 
+static void preOptimize(AsModule const &m) {
+  {
+    support::PerfRAII const r{support::PerfItemKind::Instrument};
+    std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m.get());
+    passRunner->add(std::unique_ptr<wasm::Pass>{passes::createInsertTracePointPass()});
+    passRunner->run();
+  }
+#ifndef WARPO_RELEASE_BUILD
+  ensureValidate(*m.get());
+#endif
+}
+
 static void optimize(AsModule const &m) {
   {
     support::PerfRAII const r{support::PerfItemKind::Optimization};
@@ -90,9 +103,6 @@ static void optimize(AsModule const &m) {
     passRunner->add(std::unique_ptr<wasm::Pass>{passes::createAdvancedInliningPass()});
     passRunner->run();
   }
-#ifndef WARPO_RELEASE_BUILD
-  ensureValidate(*m.get());
-#endif
   {
     support::PerfRAII const r{support::PerfItemKind::Optimization};
     std::unique_ptr<wasm::PassRunner> const passRunner = createPassRunner(m.get());
@@ -119,6 +129,7 @@ passes::Output passes::runOnModule(AsModule const &m, Config const &config) {
   ensureValidate(*m.get());
 #endif
   lowering(m.get());
+  preOptimize(m);
   if (common::getOptimizationLevel() > 0U || common::getShrinkLevel() > 0U)
     optimize(m);
 

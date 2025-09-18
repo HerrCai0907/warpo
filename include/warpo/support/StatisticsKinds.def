@@ -6,6 +6,7 @@
 #endif
 
 PERF_ITEM_KIND_TOP(CompilationHIR)
+PERF_ITEM_KIND_TOP(Instrument)
 PERF_ITEM_KIND_TOP(Optimization)
 PERF_ITEM_KIND_TOP(Validation)
 PERF_ITEM_KIND_TOP(Lowering)

@@ -63,6 +63,22 @@ template <class T> M<T> anyOf(std::initializer_list<M<T>> ms) {
     return std::any_of(ms.begin(), ms.end(), [&expr, &ctx](M<T> const &m) { return m(expr, ctx); });
   });
 }
+template <class T> M<T> allOf(std::initializer_list<M<T>> ms) {
+  return M<T>([ms = std::vector<M<T>>{ms}](T const &expr, Context &ctx) -> bool {
+    return std::all_of(ms.begin(), ms.end(), [&expr, &ctx](M<T> const &m) { return m(expr, ctx); });
+  });
+}
+static inline M<wasm::ExpressionList> has(size_t n) {
+  return M<wasm::ExpressionList>(
+      [n](wasm::ExpressionList const &expr, Context &ctx) -> bool { return expr.size() == n; });
+}
+static inline M<wasm::ExpressionList> at(size_t n, M<wasm::Expression> const &m) {
+  return M<wasm::ExpressionList>([n, m](wasm::ExpressionList const &list, Context &ctx) -> bool {
+    if (n >= list.size())
+      return false;
+    return m(*list[n], ctx);
+  });
+}
 
 constexpr IsMatcherImpl<wasm::Nop, wasm::Expression> isNop;
 
@@ -156,6 +172,9 @@ namespace call {
 static inline M<wasm::Call> callee(wasm::Name name) {
   return M<wasm::Call>([name](wasm::Call const &expr, Context &ctx) -> bool { return name == expr.target; });
 }
+static inline M<wasm::Call> operands(M<wasm::ExpressionList> const &m) {
+  return M<wasm::Call>([m](wasm::Call const &expr, Context &ctx) -> bool { return m(expr.operands, ctx); });
+}
 } // namespace call
 
 constexpr IsMatcherImpl<wasm::MemoryFill, wasm::Expression> isMemoryFill;
@@ -199,6 +218,9 @@ constexpr IsMatcherImpl<wasm::Return, wasm::Expression> isReturn;
 
 constexpr IsMatcherImpl<wasm::Block, wasm::Expression> isBlock;
 namespace block {
+static inline M<wasm::Block> list(M<wasm::ExpressionList> const &m) {
+  return M<wasm::Block>([m](wasm::Block const &expr, Context &ctx) -> bool { return m(expr.list, ctx); });
+}
 static inline M<wasm::Block> has(size_t n) {
   return M<wasm::Block>([n](wasm::Block const &expr, Context &ctx) -> bool { return expr.list.size() == n; });
 }

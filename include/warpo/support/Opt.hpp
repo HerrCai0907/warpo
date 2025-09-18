@@ -8,9 +8,10 @@ namespace warpo::cli {
 
 enum class Category : uint32_t {
   None = 0,
-  Frontend = 1 << 1,
-  Optimization = 1 << 2,
-  OnlyForTest = 1 << 3,
+  OnlyForTest = 1 << 1,
+  Frontend = 1 << 2,
+  Optimization = 1 << 3,
+  Transformation = 1 << 4,
   All = static_cast<uint32_t>(-1),
 };
 

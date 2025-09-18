@@ -24,7 +24,7 @@ void ascMain(int argc, const char *argv[]) {
   frontend::init();
   passes::init();
   argparse::ArgumentParser program("warpo_asc", "git@" GIT_COMMIT);
-  cli::init(cli::Category::Frontend | cli::Category::Optimization, program, argc, argv);
+  cli::init(cli::Category::Frontend | cli::Category::Transformation | cli::Category::Optimization, program, argc, argv);
 
   frontend::CompilationResult const result = frontend::compile();
   if (result.m.invalid()) {

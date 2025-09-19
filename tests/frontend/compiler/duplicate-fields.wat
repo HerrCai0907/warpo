@@ -1,6 +1,6 @@
 (module
- (type $0 (func (param i32 i32)))
- (type $1 (func (param i32) (result i32)))
+ (type $0 (func (param i32) (result i32)))
+ (type $1 (func (param i32 i32)))
  (type $2 (func (param i32 i32) (result i32)))
  (type $3 (func (param i32)))
  (type $4 (func))
@@ -3269,27 +3269,19 @@
   )
  )
  (func $duplicate-fields/A#constructor (param $this i32) (param $bar i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 4)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 4)
       )
      )
     )
-   )
-   (call $duplicate-fields/A#set:bar
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $duplicate-fields/A#set:bar
@@ -3307,27 +3299,19 @@
   )
  )
  (func $duplicate-fields/B#constructor (param $this i32) (param $bar i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 5)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 5)
       )
      )
     )
-   )
-   (call $duplicate-fields/B#set:bar
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.set $this
@@ -3469,27 +3453,19 @@
   )
  )
  (func $duplicate-fields/A2#constructor (param $this i32) (param $bar i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 6)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 6)
       )
      )
     )
-   )
-   (call $duplicate-fields/A2#set:bar
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $duplicate-fields/A2#set:bar
@@ -3514,27 +3490,19 @@
   )
  )
  (func $duplicate-fields/B2#constructor (param $this i32) (param $bar i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 8)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 8)
       )
      )
     )
-   )
-   (call $duplicate-fields/B2#set:bar
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.set $this
@@ -3566,27 +3534,19 @@
   )
  )
  (func $duplicate-fields/Foo#constructor (param $this i32) (param $foo i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 7)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 7)
       )
      )
     )
-   )
-   (call $duplicate-fields/Foo#set:foo
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $duplicate-fields/Foo#set:foo
@@ -3625,18 +3585,6 @@
   )
   (local.get $this)
  )
- (func $duplicate-fields/A3#set:prot (param $this i32) (param $prot i32)
-  (i32.store
-   (local.get $this)
-   (local.get $prot)
-  )
- )
- (func $duplicate-fields/A3#set:pub (param $this i32) (param $pub i32)
-  (i32.store offset=4
-   (local.get $this)
-   (local.get $pub)
-  )
- )
  (func $duplicate-fields/A3#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3662,31 +3610,7 @@
     )
    )
   )
-  (call $duplicate-fields/A3#set:prot
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $duplicate-fields/A3#set:pub
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
   (local.get $this)
- )
- (func $duplicate-fields/B3#set:prot (param $this i32) (param $prot i32)
-  (i32.store
-   (local.get $this)
-   (local.get $prot)
-  )
- )
- (func $duplicate-fields/B3#set:pub (param $this i32) (param $pub i32)
-  (i32.store offset=4
-   (local.get $this)
-   (local.get $pub)
-  )
  )
  (func $duplicate-fields/B3#constructor (param $this i32) (result i32)
   (if
@@ -3712,18 +3636,6 @@
      )
     )
    )
-  )
-  (call $duplicate-fields/B3#set:prot
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $duplicate-fields/B3#set:pub
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )

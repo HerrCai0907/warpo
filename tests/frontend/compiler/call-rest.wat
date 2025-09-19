@@ -3976,27 +3976,19 @@
   (local $4 i32)
   (local $i i32)
   (local $k i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 7)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 7)
       )
      )
     )
-   )
-   (call $call-rest/Foo#set:values
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $call-rest/Foo#set:values

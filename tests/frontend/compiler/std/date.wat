@@ -3813,24 +3813,6 @@
     )
     (local.get $epochMillis)
    )
-   (call $~lib/date/Date#set:year
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/date/Date#set:month
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/date/Date#set:day
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
   )
   (if
    (call $~lib/date/invalidDate

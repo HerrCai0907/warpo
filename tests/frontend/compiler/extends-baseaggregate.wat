@@ -6,9 +6,8 @@
  (type $4 (func))
  (type $5 (func (param i32 i32 i32)))
  (type $6 (func (param i32 i32 i32 i32)))
- (type $7 (func (param i32 f64)))
- (type $8 (func (param i32 i32 i64) (result i32)))
- (type $9 (func (result i32)))
+ (type $7 (func (param i32 i32 i64) (result i32)))
+ (type $8 (func (result i32)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (import "as-builtin-fn" "~lib/rt/__localtostack" (func $~lib/rt/__localtostack (param i32) (result i32)))
  (import "as-builtin-fn" "~lib/rt/__tmptostack" (func $~lib/rt/__tmptostack (param i32) (result i32)))
@@ -3287,133 +3286,6 @@
   )
   (local.get $this)
  )
- (func $extends-baseaggregate/A1#set:padding0 (param $this i32) (param $padding0 f64)
-  (f64.store
-   (local.get $this)
-   (local.get $padding0)
-  )
- )
- (func $extends-baseaggregate/A1#set:padding1 (param $this i32) (param $padding1 f64)
-  (f64.store offset=8
-   (local.get $this)
-   (local.get $padding1)
-  )
- )
- (func $~lib/rt/itcms/__link (param $parentPtr i32) (param $childPtr i32) (param $expectMultiple i32)
-  (local $child i32)
-  (local $parent i32)
-  (local $parentColor i32)
-  (if
-   (i32.eqz
-    (local.get $childPtr)
-   )
-   (then
-    (return)
-   )
-  )
-  (drop
-   (i32.const 1)
-  )
-  (if
-   (i32.eqz
-    (local.get $parentPtr)
-   )
-   (then
-    (call $~lib/builtins/abort
-     (i32.const 0)
-     (i32.const 256)
-     (i32.const 296)
-     (i32.const 14)
-    )
-    (unreachable)
-   )
-  )
-  (local.set $child
-   (i32.sub
-    (local.get $childPtr)
-    (i32.const 20)
-   )
-  )
-  (if
-   (i32.eq
-    (call $~lib/rt/itcms/Object#get:color
-     (local.get $child)
-    )
-    (global.get $~lib/rt/itcms/white)
-   )
-   (then
-    (local.set $parent
-     (i32.sub
-      (local.get $parentPtr)
-      (i32.const 20)
-     )
-    )
-    (local.set $parentColor
-     (call $~lib/rt/itcms/Object#get:color
-      (local.get $parent)
-     )
-    )
-    (if
-     (i32.eq
-      (local.get $parentColor)
-      (i32.eqz
-       (global.get $~lib/rt/itcms/white)
-      )
-     )
-     (then
-      (if
-       (local.get $expectMultiple)
-       (then
-        (call $~lib/rt/itcms/Object#makeGray
-         (local.get $parent)
-        )
-       )
-       (else
-        (call $~lib/rt/itcms/Object#makeGray
-         (local.get $child)
-        )
-       )
-      )
-     )
-     (else
-      (if
-       (if (result i32)
-        (i32.eq
-         (local.get $parentColor)
-         (i32.const 3)
-        )
-        (then
-         (i32.eq
-          (global.get $~lib/rt/itcms/state)
-          (i32.const 1)
-         )
-        )
-        (else
-         (i32.const 0)
-        )
-       )
-       (then
-        (call $~lib/rt/itcms/Object#makeGray
-         (local.get $child)
-        )
-       )
-      )
-     )
-    )
-   )
-  )
- )
- (func $extends-baseaggregate/A1#set:c1 (param $this i32) (param $c1 i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $c1)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $c1)
-   (i32.const 0)
-  )
- )
  (func $extends-baseaggregate/A1#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3438,24 +3310,6 @@
      )
     )
    )
-  )
-  (call $extends-baseaggregate/A1#set:padding0
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f64.const 0)
-  )
-  (call $extends-baseaggregate/A1#set:padding1
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f64.const 0)
-  )
-  (call $extends-baseaggregate/A1#set:c1
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )
@@ -3571,6 +3425,110 @@
   )
   (return
    (local.get $newPtr)
+  )
+ )
+ (func $~lib/rt/itcms/__link (param $parentPtr i32) (param $childPtr i32) (param $expectMultiple i32)
+  (local $child i32)
+  (local $parent i32)
+  (local $parentColor i32)
+  (if
+   (i32.eqz
+    (local.get $childPtr)
+   )
+   (then
+    (return)
+   )
+  )
+  (drop
+   (i32.const 1)
+  )
+  (if
+   (i32.eqz
+    (local.get $parentPtr)
+   )
+   (then
+    (call $~lib/builtins/abort
+     (i32.const 0)
+     (i32.const 256)
+     (i32.const 296)
+     (i32.const 14)
+    )
+    (unreachable)
+   )
+  )
+  (local.set $child
+   (i32.sub
+    (local.get $childPtr)
+    (i32.const 20)
+   )
+  )
+  (if
+   (i32.eq
+    (call $~lib/rt/itcms/Object#get:color
+     (local.get $child)
+    )
+    (global.get $~lib/rt/itcms/white)
+   )
+   (then
+    (local.set $parent
+     (i32.sub
+      (local.get $parentPtr)
+      (i32.const 20)
+     )
+    )
+    (local.set $parentColor
+     (call $~lib/rt/itcms/Object#get:color
+      (local.get $parent)
+     )
+    )
+    (if
+     (i32.eq
+      (local.get $parentColor)
+      (i32.eqz
+       (global.get $~lib/rt/itcms/white)
+      )
+     )
+     (then
+      (if
+       (local.get $expectMultiple)
+       (then
+        (call $~lib/rt/itcms/Object#makeGray
+         (local.get $parent)
+        )
+       )
+       (else
+        (call $~lib/rt/itcms/Object#makeGray
+         (local.get $child)
+        )
+       )
+      )
+     )
+     (else
+      (if
+       (if (result i32)
+        (i32.eq
+         (local.get $parentColor)
+         (i32.const 3)
+        )
+        (then
+         (i32.eq
+          (global.get $~lib/rt/itcms/state)
+          (i32.const 1)
+         )
+        )
+        (else
+         (i32.const 0)
+        )
+       )
+       (then
+        (call $~lib/rt/itcms/Object#makeGray
+         (local.get $child)
+        )
+       )
+      )
+     )
+    )
+   )
   )
  )
  (func $~lib/array/ensureCapacity (param $array i32) (param $newSize i32) (param $alignLog2 i32) (param $canGrow i32)

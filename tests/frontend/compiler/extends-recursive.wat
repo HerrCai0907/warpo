@@ -3,8 +3,8 @@
  (type $1 (func (param i32 i32)))
  (type $2 (func (param i32)))
  (type $3 (func))
- (type $4 (func (param i32 i32 i32)))
- (type $5 (func (param i32 i32) (result i32)))
+ (type $4 (func (param i32 i32) (result i32)))
+ (type $5 (func (param i32 i32 i32)))
  (type $6 (func (param i32 i32 i32 i32)))
  (type $7 (func (param i32 i32 i64) (result i32)))
  (type $8 (func (result i32)))
@@ -3277,121 +3277,6 @@
   )
   (local.get $this)
  )
- (func $~lib/rt/itcms/__link (param $parentPtr i32) (param $childPtr i32) (param $expectMultiple i32)
-  (local $child i32)
-  (local $parent i32)
-  (local $parentColor i32)
-  (if
-   (i32.eqz
-    (local.get $childPtr)
-   )
-   (then
-    (return)
-   )
-  )
-  (drop
-   (i32.const 1)
-  )
-  (if
-   (i32.eqz
-    (local.get $parentPtr)
-   )
-   (then
-    (call $~lib/builtins/abort
-     (i32.const 0)
-     (i32.const 96)
-     (i32.const 296)
-     (i32.const 14)
-    )
-    (unreachable)
-   )
-  )
-  (local.set $child
-   (i32.sub
-    (local.get $childPtr)
-    (i32.const 20)
-   )
-  )
-  (if
-   (i32.eq
-    (call $~lib/rt/itcms/Object#get:color
-     (local.get $child)
-    )
-    (global.get $~lib/rt/itcms/white)
-   )
-   (then
-    (local.set $parent
-     (i32.sub
-      (local.get $parentPtr)
-      (i32.const 20)
-     )
-    )
-    (local.set $parentColor
-     (call $~lib/rt/itcms/Object#get:color
-      (local.get $parent)
-     )
-    )
-    (if
-     (i32.eq
-      (local.get $parentColor)
-      (i32.eqz
-       (global.get $~lib/rt/itcms/white)
-      )
-     )
-     (then
-      (if
-       (local.get $expectMultiple)
-       (then
-        (call $~lib/rt/itcms/Object#makeGray
-         (local.get $parent)
-        )
-       )
-       (else
-        (call $~lib/rt/itcms/Object#makeGray
-         (local.get $child)
-        )
-       )
-      )
-     )
-     (else
-      (if
-       (if (result i32)
-        (i32.eq
-         (local.get $parentColor)
-         (i32.const 3)
-        )
-        (then
-         (i32.eq
-          (global.get $~lib/rt/itcms/state)
-          (i32.const 1)
-         )
-        )
-        (else
-         (i32.const 0)
-        )
-       )
-       (then
-        (call $~lib/rt/itcms/Object#makeGray
-         (local.get $child)
-        )
-       )
-      )
-     )
-    )
-   )
-  )
- )
- (func $extends-recursive/Parent#set:child (param $this i32) (param $child i32)
-  (i32.store
-   (local.get $this)
-   (local.get $child)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $child)
-   (i32.const 0)
-  )
- )
  (func $extends-recursive/Parent#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3416,12 +3301,6 @@
      )
     )
    )
-  )
-  (call $extends-recursive/Parent#set:child
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )

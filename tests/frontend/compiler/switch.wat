@@ -4300,27 +4300,19 @@
   )
  )
  (func $switch/FooClass#constructor (param $this i32) (param $value i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 4)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 4)
       )
      )
     )
-   )
-   (call $switch/FooClass#set:value
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $switch/FooClass#set:value
@@ -4473,27 +4465,19 @@
   )
  )
  (func $switch/BarClass#constructor (param $this i32) (param $value i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 5)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 5)
       )
      )
     )
-   )
-   (call $switch/BarClass#set:value
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $switch/BarClass#set:value

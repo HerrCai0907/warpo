@@ -5,17 +5,14 @@
  (type $3 (func))
  (type $4 (func (param i32 i32) (result i32)))
  (type $5 (func (param i32 i32 i32)))
- (type $6 (func (param i32 f64)))
- (type $7 (func (param i32) (result f64)))
- (type $8 (func (param i32 i64)))
- (type $9 (func (param i32) (result i64)))
- (type $10 (func (param i32 i32 i32 i32)))
- (type $11 (func (param i32 i32 i64) (result i32)))
- (type $12 (func (result i32)))
- (type $13 (func (param i32 i32 i32 i32 i32) (result i32)))
- (type $14 (func (param i32 i32 i32) (result i32)))
- (type $15 (func (param i32 f32)))
- (type $16 (func (param i32) (result f32)))
+ (type $6 (func (param i32) (result f64)))
+ (type $7 (func (param i32) (result i64)))
+ (type $8 (func (param i32 i32 i32 i32)))
+ (type $9 (func (param i32 i32 i64) (result i32)))
+ (type $10 (func (result i32)))
+ (type $11 (func (param i32 i32 i32 i32 i32) (result i32)))
+ (type $12 (func (param i32 i32 i32) (result i32)))
+ (type $13 (func (param i32) (result f32)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (import "as-builtin-fn" "~lib/rt/__localtostack" (func $~lib/rt/__localtostack (param i32) (result i32)))
  (import "as-builtin-fn" "~lib/rt/__tmptostack" (func $~lib/rt/__tmptostack (param i32) (result i32)))
@@ -3439,18 +3436,6 @@
     )
    )
   )
-  (call $object-literal/Managed#set:bar
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/Managed#set:baz
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
   (local.get $this)
  )
  (func $object-literal/Managed#get:bar (param $this i32) (result i32)
@@ -3956,14 +3941,6 @@
     )
    )
   )
-  (call $object-literal/Unmanaged#set:bar
-   (local.get $this)
-   (i32.const 0)
-  )
-  (call $object-literal/Unmanaged#set:baz
-   (local.get $this)
-   (i32.const 0)
-  )
   (local.get $this)
  )
  (func $object-literal/Unmanaged#get:bar (param $this i32) (result i32)
@@ -4023,90 +4000,6 @@
    (local.get $unmanaged)
   )
  )
- (func $object-literal/OmittedTypes#set:int32 (param $this i32) (param $int32 i32)
-  (i32.store
-   (local.get $this)
-   (local.get $int32)
-  )
- )
- (func $object-literal/OmittedTypes#set:uint32 (param $this i32) (param $uint32 i32)
-  (i32.store offset=4
-   (local.get $this)
-   (local.get $uint32)
-  )
- )
- (func $object-literal/OmittedTypes#set:int64 (param $this i32) (param $int64 i64)
-  (i64.store offset=8
-   (local.get $this)
-   (local.get $int64)
-  )
- )
- (func $object-literal/OmittedTypes#set:uint64 (param $this i32) (param $uint64 i64)
-  (i64.store offset=16
-   (local.get $this)
-   (local.get $uint64)
-  )
- )
- (func $object-literal/OmittedTypes#set:float32 (param $this i32) (param $float32 f32)
-  (f32.store offset=24
-   (local.get $this)
-   (local.get $float32)
-  )
- )
- (func $object-literal/OmittedTypes#set:float64 (param $this i32) (param $float64 f64)
-  (f64.store offset=32
-   (local.get $this)
-   (local.get $float64)
-  )
- )
- (func $object-literal/OmittedTypes#set:int8 (param $this i32) (param $int8 i32)
-  (i32.store8 offset=40
-   (local.get $this)
-   (local.get $int8)
-  )
- )
- (func $object-literal/OmittedTypes#set:uint8 (param $this i32) (param $uint8 i32)
-  (i32.store8 offset=41
-   (local.get $this)
-   (local.get $uint8)
-  )
- )
- (func $object-literal/OmittedTypes#set:int16 (param $this i32) (param $int16 i32)
-  (i32.store16 offset=42
-   (local.get $this)
-   (local.get $int16)
-  )
- )
- (func $object-literal/OmittedTypes#set:uint16 (param $this i32) (param $uint16 i32)
-  (i32.store16 offset=44
-   (local.get $this)
-   (local.get $uint16)
-  )
- )
- (func $object-literal/OmittedTypes#set:intsize (param $this i32) (param $intsize i32)
-  (i32.store offset=48
-   (local.get $this)
-   (local.get $intsize)
-  )
- )
- (func $object-literal/OmittedTypes#set:uintsize (param $this i32) (param $uintsize i32)
-  (i32.store offset=52
-   (local.get $this)
-   (local.get $uintsize)
-  )
- )
- (func $object-literal/OmittedTypes#set:alias (param $this i32) (param $alias f64)
-  (f64.store offset=56
-   (local.get $this)
-   (local.get $alias)
-  )
- )
- (func $object-literal/OmittedTypes#set:isTrue (param $this i32) (param $isTrue i32)
-  (i32.store8 offset=64
-   (local.get $this)
-   (local.get $isTrue)
-  )
- )
  (func $object-literal/OmittedTypes#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -4131,90 +4024,6 @@
      )
     )
    )
-  )
-  (call $object-literal/OmittedTypes#set:int32
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:uint32
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:int64
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i64.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:uint64
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i64.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:float32
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:float64
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f64.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:int8
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:uint8
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:int16
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:uint16
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:intsize
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:uintsize
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:alias
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f64.const 0)
-  )
-  (call $object-literal/OmittedTypes#set:isTrue
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )
@@ -4614,12 +4423,6 @@
    (i32.const 0)
   )
  )
- (func $object-literal/MixedOmitted#set:anotherSimpleType (param $this i32) (param $anotherSimpleType f64)
-  (f64.store offset=8
-   (local.get $this)
-   (local.get $anotherSimpleType)
-  )
- )
  (func $object-literal/MixedOmitted#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -4644,24 +4447,6 @@
      )
     )
    )
-  )
-  (call $object-literal/MixedOmitted#set:simpleType
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/MixedOmitted#set:complexType
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/MixedOmitted#set:anotherSimpleType
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f64.const 0)
   )
   (local.get $this)
  )
@@ -4771,78 +4556,6 @@
    (i32.const 0)
   )
  )
- (func $object-literal/OmittedFoo#set:quux (param $this i32) (param $quux i32)
-  (i32.store offset=8
-   (local.get $this)
-   (local.get $quux)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $quux)
-   (i32.const 0)
-  )
- )
- (func $object-literal/OmittedFoo#set:quuz (param $this i32) (param $quuz i32)
-  (i32.store offset=12
-   (local.get $this)
-   (local.get $quuz)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $quuz)
-   (i32.const 0)
-  )
- )
- (func $object-literal/OmittedFoo#set:corge (param $this i32) (param $corge i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $corge)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $corge)
-   (i32.const 0)
-  )
- )
- (func $object-literal/OmittedFoo#set:grault (param $this i32) (param $grault i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $grault)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $grault)
-   (i32.const 0)
-  )
- )
- (func $object-literal/OmittedFoo#set:garply (param $this i32) (param $garply i32)
-  (i32.store offset=24
-   (local.get $this)
-   (local.get $garply)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $garply)
-   (i32.const 0)
-  )
- )
- (func $object-literal/OmittedFoo#set:waldo (param $this i32) (param $waldo i32)
-  (i32.store offset=28
-   (local.get $this)
-   (local.get $waldo)
-  )
-  (call $~lib/rt/itcms/__link
-   (local.get $this)
-   (local.get $waldo)
-   (i32.const 0)
-  )
- )
- (func $object-literal/OmittedFoo#set:fred (param $this i32) (param $fred i32)
-  (i32.store offset=32
-   (local.get $this)
-   (local.get $fred)
-  )
- )
  (func $object-literal/OmittedFoo#set:qux (param $this i32) (param $qux i32)
   (i32.store offset=36
    (local.get $this)
@@ -4889,48 +4602,6 @@
    (call $~lib/rt/__tmptostack
     (i32.const 672)
    )
-  )
-  (call $object-literal/OmittedFoo#set:quux
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedFoo#set:quuz
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedFoo#set:corge
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedFoo#set:grault
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedFoo#set:garply
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedFoo#set:waldo
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $object-literal/OmittedFoo#set:fred
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (call $object-literal/OmittedFoo#set:qux
    (call $~lib/rt/__tmptostack

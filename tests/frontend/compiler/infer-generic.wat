@@ -3448,12 +3448,6 @@
     )
    )
   )
-  (call $infer-generic/Ref#set:x
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
   (local.get $this)
  )
  (func $infer-generic/inferDefault<infer-generic/Ref> (param $a i32) (result i32)

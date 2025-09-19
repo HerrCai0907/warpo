@@ -3742,45 +3742,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 4)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 4)
       )
      )
     )
-   )
-   (call $~lib/array/Array<i32>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i32>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i32>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i32>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -3949,39 +3923,19 @@
  )
  (func $~lib/arraybuffer/ArrayBufferView#constructor (param $this i32) (param $length i32) (param $alignLog2 i32) (result i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 12)
-        (i32.const 3)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 12)
+       (i32.const 3)
       )
      )
     )
-   )
-   (call $~lib/arraybuffer/ArrayBufferView#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/arraybuffer/ArrayBufferView#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/arraybuffer/ArrayBufferView#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -11863,18 +11817,6 @@
      )
     )
    )
-  )
-  (call $std/array/Dim#set:height
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $std/array/Dim#set:width
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )
@@ -20225,45 +20167,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 29)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 29)
       )
      )
     )
-   )
-   (call $~lib/array/Array<~lib/array/Array<i32>>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<~lib/array/Array<i32>>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<~lib/array/Array<i32>>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<~lib/array/Array<i32>>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -22142,45 +22058,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 32)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 32)
       )
      )
     )
-   )
-   (call $~lib/array/Array<std/array/Proxy<i32>>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<std/array/Proxy<i32>>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<std/array/Proxy<i32>>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<std/array/Proxy<i32>>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -26201,45 +26091,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 16)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 16)
       )
      )
     )
-   )
-   (call $~lib/array/Array<~lib/string/String>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<~lib/string/String>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<~lib/string/String>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<~lib/string/String>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if

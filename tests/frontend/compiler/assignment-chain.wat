@@ -3286,18 +3286,6 @@
   )
   (local.get $this)
  )
- (func $assignment-chain/A#set:x (param $this i32) (param $x i64)
-  (i64.store
-   (local.get $this)
-   (local.get $x)
-  )
- )
- (func $assignment-chain/A#set:y (param $this i32) (param $y i64)
-  (i64.store offset=8
-   (local.get $this)
-   (local.get $y)
-  )
- )
  (func $assignment-chain/A#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3323,19 +3311,19 @@
     )
    )
   )
-  (call $assignment-chain/A#set:x
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i64.const 0)
-  )
-  (call $assignment-chain/A#set:y
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i64.const 0)
-  )
   (local.get $this)
+ )
+ (func $assignment-chain/A#set:y (param $this i32) (param $y i64)
+  (i64.store offset=8
+   (local.get $this)
+   (local.get $y)
+  )
+ )
+ (func $assignment-chain/A#set:x (param $this i32) (param $x i64)
+  (i64.store
+   (local.get $this)
+   (local.get $x)
+  )
  )
  (func $assignment-chain/normal_assignment_chain
   (local $x i32)
@@ -3398,24 +3386,6 @@
    )
   )
  )
- (func $assignment-chain/B#set:_setter_cnt (param $this i32) (param $_setter_cnt i32)
-  (i32.store
-   (local.get $this)
-   (local.get $_setter_cnt)
-  )
- )
- (func $assignment-chain/B#set:_getter_cnt (param $this i32) (param $_getter_cnt i32)
-  (i32.store offset=4
-   (local.get $this)
-   (local.get $_getter_cnt)
-  )
- )
- (func $assignment-chain/B#set:_y (param $this i32) (param $_y f64)
-  (f64.store offset=8
-   (local.get $this)
-   (local.get $_y)
-  )
- )
  (func $assignment-chain/B#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3441,29 +3411,23 @@
     )
    )
   )
-  (call $assignment-chain/B#set:_setter_cnt
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $assignment-chain/B#set:_getter_cnt
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
-  )
-  (call $assignment-chain/B#set:_y
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (f64.const 0)
-  )
   (local.get $this)
  )
  (func $assignment-chain/B#get:_setter_cnt (param $this i32) (result i32)
   (i32.load
    (local.get $this)
+  )
+ )
+ (func $assignment-chain/B#set:_setter_cnt (param $this i32) (param $_setter_cnt i32)
+  (i32.store
+   (local.get $this)
+   (local.get $_setter_cnt)
+  )
+ )
+ (func $assignment-chain/B#set:_y (param $this i32) (param $_y f64)
+  (f64.store offset=8
+   (local.get $this)
+   (local.get $_y)
   )
  )
  (func $assignment-chain/B#set:y (param $this i32) (param $z f64)

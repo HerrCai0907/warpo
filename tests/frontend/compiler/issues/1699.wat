@@ -3402,45 +3402,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 5)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 5)
       )
      )
     )
-   )
-   (call $~lib/array/Array<issues/1699/MultiAssignmentTest>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<issues/1699/MultiAssignmentTest>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<issues/1699/MultiAssignmentTest>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<issues/1699/MultiAssignmentTest>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if

@@ -3323,34 +3323,20 @@
   )
   (local.get $this)
  )
- (func $constructor/EmptyCtorWithFieldNoInit#set:a (param $this i32) (param $a i32)
-  (i32.store
-   (local.get $this)
-   (local.get $a)
-  )
- )
  (func $constructor/EmptyCtorWithFieldNoInit#constructor (param $this i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 6)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 6)
       )
      )
     )
-   )
-   (call $constructor/EmptyCtorWithFieldNoInit#set:a
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -3362,27 +3348,19 @@
   )
  )
  (func $constructor/EmptyCtorWithFieldAccess#constructor (param $this i32) (result i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 4)
-        (i32.const 7)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 4)
+       (i32.const 7)
       )
      )
     )
-   )
-   (call $constructor/EmptyCtorWithFieldAccess#set:a
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (call $constructor/EmptyCtorWithFieldAccess#set:a
@@ -3477,12 +3455,6 @@
   )
   (local.get $this)
  )
- (func $constructor/JustFieldNoInit#set:a (param $this i32) (param $a i32)
-  (i32.store
-   (local.get $this)
-   (local.get $a)
-  )
- )
  (func $constructor/JustFieldNoInit#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3507,12 +3479,6 @@
      )
     )
    )
-  )
-  (call $constructor/JustFieldNoInit#set:a
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )

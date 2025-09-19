@@ -3309,18 +3309,6 @@
     )
     (local.get $x)
    )
-   (call $issues/1225/X#set:normal
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $issues/1225/X#set:viaThis
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
   )
   (call $issues/1225/X#set:viaThis
    (call $~lib/rt/__tmptostack

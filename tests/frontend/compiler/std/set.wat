@@ -3459,18 +3459,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<i8>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<i8>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<i8>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -3534,18 +3522,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<i8>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<i8>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -3808,6 +3784,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<i8>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<i8>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -4013,6 +3995,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<i8>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<i8>#add (param $this i32) (param $key i32) (result i32)
@@ -4233,45 +4221,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 5)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 5)
       )
      )
     )
-   )
-   (call $~lib/array/Array<i8>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i8>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i8>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i8>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -5564,18 +5526,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<u8>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<u8>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<u8>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -5639,18 +5589,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<u8>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<u8>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -5916,6 +5854,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<u8>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<u8>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -6121,6 +6065,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<u8>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<u8>#add (param $this i32) (param $key i32) (result i32)
@@ -6341,45 +6291,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 7)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 7)
       )
      )
     )
-   )
-   (call $~lib/array/Array<u8>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u8>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u8>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u8>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -7448,18 +7372,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<i16>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<i16>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<i16>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -7523,18 +7435,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<i16>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<i16>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -7797,6 +7697,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<i16>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<i16>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -8002,6 +7908,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<i16>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<i16>#add (param $this i32) (param $key i32) (result i32)
@@ -8222,45 +8134,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 9)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 9)
       )
      )
     )
-   )
-   (call $~lib/array/Array<i16>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i16>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i16>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i16>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -9329,18 +9215,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<u16>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<u16>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<u16>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -9404,18 +9278,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<u16>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<u16>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -9681,6 +9543,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<u16>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<u16>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -9886,6 +9754,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<u16>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<u16>#add (param $this i32) (param $key i32) (result i32)
@@ -10106,45 +9980,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 11)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 11)
       )
      )
     )
-   )
-   (call $~lib/array/Array<u16>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u16>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u16>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u16>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -11213,18 +11061,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<i32>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<i32>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<i32>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -11288,18 +11124,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<i32>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<i32>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -11556,6 +11380,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<i32>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<i32>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -11761,6 +11591,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<i32>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<i32>#add (param $this i32) (param $key i32) (result i32)
@@ -11981,45 +11817,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 13)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 13)
       )
      )
     )
-   )
-   (call $~lib/array/Array<i32>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i32>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i32>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i32>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -13088,18 +12898,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<u32>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<u32>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<u32>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -13163,18 +12961,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<u32>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<u32>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -13431,6 +13217,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<u32>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<u32>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -13636,6 +13428,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<u32>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<u32>#add (param $this i32) (param $key i32) (result i32)
@@ -13856,45 +13654,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 15)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 15)
       )
      )
     )
-   )
-   (call $~lib/array/Array<u32>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u32>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u32>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u32>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -14963,18 +14735,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<i64>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<i64>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<i64>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -15038,18 +14798,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<i64>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<i64>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -15333,6 +15081,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<i64>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<i64>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -15538,6 +15292,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<i64>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<i64>#add (param $this i32) (param $key i64) (result i32)
@@ -15758,45 +15518,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 17)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 17)
       )
      )
     )
-   )
-   (call $~lib/array/Array<i64>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i64>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i64>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<i64>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -16865,18 +16599,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<u64>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<u64>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<u64>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -16940,18 +16662,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<u64>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<u64>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -17235,6 +16945,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<u64>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<u64>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -17440,6 +17156,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<u64>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<u64>#add (param $this i32) (param $key i64) (result i32)
@@ -17660,45 +17382,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 19)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 19)
       )
      )
     )
-   )
-   (call $~lib/array/Array<u64>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u64>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u64>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<u64>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -18767,18 +18463,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<f32>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<f32>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<f32>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -18842,18 +18526,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<f32>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<f32>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -19112,6 +18784,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<f32>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<f32>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -19317,6 +18995,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<f32>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<f32>#add (param $this i32) (param $key f32) (result i32)
@@ -19537,45 +19221,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 21)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 21)
       )
      )
     )
-   )
-   (call $~lib/array/Array<f32>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<f32>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<f32>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<f32>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if
@@ -20644,18 +20302,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $~lib/set/Set<f64>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $~lib/set/Set<f64>#set:entriesCount (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $~lib/set/Set<f64>#constructor (param $this i32) (result i32)
   (block
    (if
@@ -20719,18 +20365,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $~lib/set/Set<f64>#set:entriesOffset
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/set/Set<f64>#set:entriesCount
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -21016,6 +20650,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $~lib/set/Set<f64>#set:entriesOffset (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $~lib/set/Set<f64>#rehash (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -21221,6 +20861,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $~lib/set/Set<f64>#set:entriesCount (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $~lib/set/Set<f64>#add (param $this i32) (param $key f64) (result i32)
@@ -21441,45 +21087,19 @@
   (local $3 i32)
   (local $bufferSize i32)
   (local $buffer i32)
-  (block
-   (if
-    (i32.eqz
-     (local.get $this)
-    )
-    (then
-     (local.set $this
-      (call $~lib/rt/__localtostack
-       (call $~lib/rt/itcms/__new
-        (i32.const 16)
-        (i32.const 23)
-       )
+  (if
+   (i32.eqz
+    (local.get $this)
+   )
+   (then
+    (local.set $this
+     (call $~lib/rt/__localtostack
+      (call $~lib/rt/itcms/__new
+       (i32.const 16)
+       (i32.const 23)
       )
      )
     )
-   )
-   (call $~lib/array/Array<f64>#set:buffer
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<f64>#set:dataStart
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<f64>#set:byteLength
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $~lib/array/Array<f64>#set:length_
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (if

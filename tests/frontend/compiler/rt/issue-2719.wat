@@ -3278,12 +3278,6 @@
   )
   (local.get $this)
  )
- (func $rt/issue-2719/issue2719_T#set:v (param $this i32) (param $v i32)
-  (i32.store
-   (local.get $this)
-   (local.get $v)
-  )
- )
  (func $rt/issue-2719/issue2719_T#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -3308,12 +3302,6 @@
      )
     )
    )
-  )
-  (call $rt/issue-2719/issue2719_T#set:v
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i32.const 0)
   )
   (local.get $this)
  )
@@ -3387,6 +3375,12 @@
   )
   (drop
    (i32.const 0)
+  )
+ )
+ (func $rt/issue-2719/issue2719_T#set:v (param $this i32) (param $v i32)
+  (i32.store
+   (local.get $this)
+   (local.get $v)
   )
  )
  (func $rt/issue-2719/issue2719_f2 (param $t i32) (result i32)

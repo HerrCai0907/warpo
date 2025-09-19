@@ -3705,12 +3705,6 @@
        )
        (i32.const 3)
       )
-      (call $inlining/Bar#set:e
-       (call $~lib/rt/__tmptostack
-        (local.get $this)
-       )
-       (i32.const 0)
-      )
      )
      (local.set $this
       (call $~lib/rt/__localtostack
@@ -3744,12 +3738,6 @@
            (local.get $this|2)
           )
           (i32.const 1)
-         )
-         (call $inlining/Baz#set:b
-          (call $~lib/rt/__tmptostack
-           (local.get $this|2)
-          )
-          (i32.const 0)
          )
         )
         (call $inlining/Baz#set:b

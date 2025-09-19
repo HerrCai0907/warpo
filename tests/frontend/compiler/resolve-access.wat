@@ -4677,12 +4677,6 @@
   )
   (local.get $this)
  )
- (func $resolve-access/Container#set:foo (param $this i32) (param $foo i64)
-  (i64.store
-   (local.get $this)
-   (local.get $foo)
-  )
- )
  (func $resolve-access/Container#constructor (param $this i32) (result i32)
   (if
    (i32.eqz
@@ -4708,13 +4702,13 @@
     )
    )
   )
-  (call $resolve-access/Container#set:foo
-   (call $~lib/rt/__tmptostack
-    (local.get $this)
-   )
-   (i64.const 0)
-  )
   (local.get $this)
+ )
+ (func $resolve-access/Container#set:foo (param $this i32) (param $foo i64)
+  (i64.store
+   (local.get $this)
+   (local.get $foo)
+  )
  )
  (func $resolve-access/Container#get:foo (param $this i32) (result i64)
   (i64.load

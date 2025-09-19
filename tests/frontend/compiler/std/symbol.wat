@@ -3505,18 +3505,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $"~lib/map/Map<~lib/string/String,usize>#set:entriesOffset" (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $"~lib/map/Map<~lib/string/String,usize>#set:entriesCount" (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $"~lib/map/Map<~lib/string/String,usize>#constructor" (param $this i32) (result i32)
   (block
    (if
@@ -3580,18 +3568,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $"~lib/map/Map<~lib/string/String,usize>#set:entriesOffset"
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $"~lib/map/Map<~lib/string/String,usize>#set:entriesCount"
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -4448,6 +4424,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $"~lib/map/Map<~lib/string/String,usize>#set:entriesOffset" (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $"~lib/map/Map<~lib/string/String,usize>#rehash" (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -4665,6 +4647,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $"~lib/map/Map<~lib/string/String,usize>#set:entriesCount" (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $"~lib/map/Map<~lib/string/String,usize>#set" (param $this i32) (param $key i32) (param $value i32) (result i32)
@@ -4907,18 +4895,6 @@
    (local.get $entriesCapacity)
   )
  )
- (func $"~lib/map/Map<usize,~lib/string/String>#set:entriesOffset" (param $this i32) (param $entriesOffset i32)
-  (i32.store offset=16
-   (local.get $this)
-   (local.get $entriesOffset)
-  )
- )
- (func $"~lib/map/Map<usize,~lib/string/String>#set:entriesCount" (param $this i32) (param $entriesCount i32)
-  (i32.store offset=20
-   (local.get $this)
-   (local.get $entriesCount)
-  )
- )
  (func $"~lib/map/Map<usize,~lib/string/String>#constructor" (param $this i32) (result i32)
   (block
    (if
@@ -4982,18 +4958,6 @@
      (local.get $this)
     )
     (i32.const 4)
-   )
-   (call $"~lib/map/Map<usize,~lib/string/String>#set:entriesOffset"
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
-   )
-   (call $"~lib/map/Map<usize,~lib/string/String>#set:entriesCount"
-    (call $~lib/rt/__tmptostack
-     (local.get $this)
-    )
-    (i32.const 0)
    )
   )
   (local.get $this)
@@ -5245,6 +5209,12 @@
    (local.get $taggedNext)
   )
  )
+ (func $"~lib/map/Map<usize,~lib/string/String>#set:entriesOffset" (param $this i32) (param $entriesOffset i32)
+  (i32.store offset=16
+   (local.get $this)
+   (local.get $entriesOffset)
+  )
+ )
  (func $"~lib/map/Map<usize,~lib/string/String>#rehash" (param $this i32) (param $newBucketsMask i32)
   (local $newBucketsCapacity i32)
   (local $newBuckets i32)
@@ -5458,6 +5428,12 @@
      (local.get $this)
     )
    )
+  )
+ )
+ (func $"~lib/map/Map<usize,~lib/string/String>#set:entriesCount" (param $this i32) (param $entriesCount i32)
+  (i32.store offset=20
+   (local.get $this)
+   (local.get $entriesCount)
   )
  )
  (func $"~lib/map/Map<usize,~lib/string/String>#set" (param $this i32) (param $key i32) (param $value i32) (result i32)

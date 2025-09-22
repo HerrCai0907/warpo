@@ -8,7 +8,11 @@
 #include <exception>
 #include <filesystem>
 #include <fmt/base.h>
+#include <memory>
 #include <nlohmann/json.hpp>
+#include <pass.h>
+#include <passes/GC/OptLower.hpp>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -16,11 +20,18 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <wasm-binary.h>
 
+#include "LinkedAPI.hpp"
+#include "warp_runner/warpRunner.hpp"
 #include "warpo/frontend/Compiler.hpp"
 #include "warpo/support/FileSystem.hpp"
 #include "warpo/support/Opt.hpp"
+#include "wasm-validator.h"
 #include "wasm.h"
+
+#include "src/WasmModule/WasmModule.hpp"
+#include "src/core/runtime/TrapException.hpp"
 
 namespace warpo {
 namespace {
@@ -56,6 +67,53 @@ frontend::CompilationResult compile(nlohmann::json const &configJson, std::files
     }
   }
   return frontend::compile(entries, config);
+}
+
+[[nodiscard]] TestResult runModuleOnWarp(AsModule const &asModule) {
+  // skip unsupported test cases which has global imports
+  if (std::ranges::any_of(asModule.get()->globals,
+                          [](std::unique_ptr<wasm::Global> const &global) { return global->imported(); }))
+    return TestResult::Skip;
+
+  // lowering built-in imports
+  wasm::PassRunner passRunner{asModule.get()};
+  passRunner.add(std::unique_ptr<wasm::Pass>{new passes::gc::OptLower()});
+  passRunner.run();
+  wasm::BufferWithRandomAccess buffer;
+  wasm::WasmBinaryWriter writer(asModule.get(), buffer, wasm::PassOptions::getWithoutOptimization());
+  writer.setNamesSection(false);
+  writer.setEmitModuleName(false);
+  writer.write();
+  std::vector<uint8_t> wasm{static_cast<std::vector<uint8_t>>(buffer)};
+
+  // validate
+  if (!wasm::WasmValidator{}.validate(*asModule.get()))
+    throw std::logic_error("validate error");
+
+  // run
+  WarpRunner r{nullptr};
+  try {
+    static std::vector<vb::NativeSymbol> const linkedAPI = frontend::createAssemblyscriptAPI();
+    r->initFromBytecode(vb::Span<const uint8_t>{wasm.data(), wasm.size()},
+                        vb::Span<vb::NativeSymbol const>{linkedAPI.data(), linkedAPI.size()}, false);
+    r->start(r.getStackTop());
+  } catch (vb::TrapException &e) {
+    std::cout << e.what() << ": " << static_cast<uint32_t>(e.getTrapCode()) << std::endl;
+    return TestResult::Failure;
+  } catch (vb::LinkingException &e) {
+    // Linking failed is acceptable, skip unsupported function
+    return TestResult::Skip;
+  } catch (const std::exception &e) {
+    // Feature not implemented in warp is acceptable
+    bool const skip = std::string(e.what()).find("feature not implemented") != std::string::npos;
+    if (!skip) {
+      std::cout << e.what() << std::endl;
+      return TestResult::Failure;
+    }
+    return TestResult::Skip;
+  }
+
+  return TestResult::Success;
 }
 
 [[nodiscard]] TestResult runUpdate(nlohmann::json const &configJson, std::filesystem::path const &tsPath,
@@ -132,7 +190,7 @@ frontend::CompilationResult compile(nlohmann::json const &configJson, std::files
     fmt::println("FAILED '{}': mismatched wat output", tsPath.c_str());
     return TestResult::Failure;
   }
-  return TestResult::Success;
+  return runModuleOnWarp(ret.m);
 }
 
 bool isAnyASCFlagsNotImplemented(nlohmann::json::array_t const &ascFlags, std::filesystem::path const &tsPath) {
@@ -186,6 +244,7 @@ bool shouldSkipTestCase(nlohmann::json const &configJson, std::filesystem::path 
   }
 }
 
+/// @brief Get all *.ts files recursively under the given folder.
 void collectTestFilesImpl(std::vector<std::filesystem::path> &testFiles, std::filesystem::path const &folder) {
   for (std::filesystem::directory_entry const &entry : std::filesystem::directory_iterator{folder}) {
     if (entry.is_directory()) {
@@ -260,6 +319,8 @@ void frontendTestMain(int argc, const char *argv[]) {
 
   if (numFailed > 0U)
     throw std::runtime_error("test failed");
+  fmt::println("\x1b[32m[SUCCESS]\x1b[0m {} tests passed. ({} skipped)", testFiles.size() - numSkipped.load(),
+               numSkipped.load());
 }
 
 } // namespace

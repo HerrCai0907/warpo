@@ -26,7 +26,6 @@
 #include "wasm-compiler/src/core/common/ILogger.hpp"
 #include "wasm-compiler/src/core/common/NativeSymbol.hpp"
 #include "wasm-compiler/src/utils/STDCompilerLogger.hpp"
-#include "wasm-compiler/src/utils/StackTop.hpp"
 #include "wasm.h"
 
 #include "src/core/runtime/TrapException.hpp"
@@ -43,11 +42,12 @@ enum WasmFFIBool : uint32_t { WASM_FALSE = 0, WASM_TRUE = 1 };
 } // namespace
 int32_t FrontendCompiler::allocString(std::string_view str) {
   std::u16string utf16Str = utf8ToUtf16(std::string(str));
-  int32_t const ptr = m.callExportedFunctionWithName<1>(stackTop, "__new", static_cast<int32_t>(utf16Str.size() * 2U),
-                                                        static_cast<int32_t>(2))[0]
-                          .i32;
-  m.callExportedFunctionWithName<1>(stackTop, "__pin", ptr);
-  uint8_t *const stringBegin = m.getLinearMemoryRegion(static_cast<uint32_t>(ptr), utf16Str.size());
+  int32_t const ptr =
+      r->callExportedFunctionWithName<1>(r.getStackTop(), "__new", static_cast<int32_t>(utf16Str.size() * 2U),
+                                         static_cast<int32_t>(2))[0]
+          .i32;
+  r->callExportedFunctionWithName<1>(r.getStackTop(), "__pin", ptr);
+  uint8_t *const stringBegin = r->getLinearMemoryRegion(static_cast<uint32_t>(ptr), utf16Str.size());
   std::memcpy(stringBegin, utf16Str.data(), utf16Str.size() * sizeof(char16_t));
 
   return ptr;
@@ -55,20 +55,20 @@ int32_t FrontendCompiler::allocString(std::string_view str) {
 
 void FrontendCompiler::parseFile(int32_t const program, std::optional<std::string> const &code, std::string_view path,
                                  IsEntry isEntry) {
-  m.callExportedFunctionWithName<0>(stackTop, "__setArgumentsLength", 4U);
+  r->callExportedFunctionWithName<0>(r.getStackTop(), "__setArgumentsLength", 4U);
   if (code.has_value()) {
-    m.callExportedFunctionWithName<0>(stackTop, "parse", program, allocString(code.value()), allocString(path),
-                                      isEntry);
+    r->callExportedFunctionWithName<0>(r.getStackTop(), "parse", program, allocString(code.value()), allocString(path),
+                                       isEntry);
   } else {
-    m.callExportedFunctionWithName<0>(stackTop, "parse", program, 0U, allocString(path), isEntry);
+    r->callExportedFunctionWithName<0>(r.getStackTop(), "parse", program, 0U, allocString(path), isEntry);
   }
 }
 
 std::string FrontendCompiler::getAsString(int32_t ptr) {
-  uint8_t const *header = m.getLinearMemoryRegion(ptr - 20U, 20);
+  uint8_t const *header = r->getLinearMemoryRegion(ptr - 20U, 20);
   uint32_t size = 0;
   std::memcpy(&size, header + 16, sizeof(size));
-  uint8_t const *content = m.getLinearMemoryRegion(ptr, size);
+  uint8_t const *content = r->getLinearMemoryRegion(ptr, size);
 
   std::u16string utf16Str;
   utf16Str.resize(size / 2);
@@ -156,7 +156,7 @@ FrontendCompiler::Dependency FrontendCompiler::getDependencyForNodeModules(std::
                                                                            int32_t program, int32_t nextFile) {
   if (support::isDebug("ModuleResolve"))
     fmt::println("[module resolve] get dependency for '{}'", nextFileInternalPath);
-  int32_t const dependee = m.callExportedFunctionWithName<1>(stackTop, "getDependee", program, nextFile)[0].i32;
+  int32_t const dependee = r->callExportedFunctionWithName<1>(r.getStackTop(), "getDependee", program, nextFile)[0].i32;
   std::string const dependeePath = getAsString(dependee);
   if (PackageResolveResult const package = getPackageName(nextFileInternalPath); package.has_value()) {
     auto const [packageName, filePath] = *package;
@@ -226,7 +226,7 @@ FrontendCompiler::Dependency FrontendCompiler::getDependency(std::string const &
 std::vector<FrontendCompiler::Dependency> FrontendCompiler::getAllDependencies(int32_t const program) {
   std::vector<Dependency> dependencies{};
   while (true) {
-    int32_t const nextFile = m.callExportedFunctionWithName<1U>(stackTop, "nextFile", program)[0].i32;
+    int32_t const nextFile = r->callExportedFunctionWithName<1U>(r.getStackTop(), "nextFile", program)[0].i32;
     if (nextFile == 0U) {
       break;
     }
@@ -239,17 +239,17 @@ std::vector<FrontendCompiler::Dependency> FrontendCompiler::getAllDependencies(i
 bool FrontendCompiler::checkDiag(int32_t const program, bool useColorfulDiagMessage) {
   size_t errorCount = 0;
   while (true) {
-    int32_t const diag = m.callExportedFunctionWithName<1>(stackTop, "nextDiagnostic", program)[0].i32;
+    int32_t const diag = r->callExportedFunctionWithName<1>(r.getStackTop(), "nextDiagnostic", program)[0].i32;
     if (diag == 0)
       break;
-    bool const isError = static_cast<bool>(m.callExportedFunctionWithName<1>(stackTop, "isError", diag)[0].i32);
+    bool const isError = static_cast<bool>(r->callExportedFunctionWithName<1>(r.getStackTop(), "isError", diag)[0].i32);
     if (isError)
       errorCount++;
-    m.callExportedFunctionWithName<0>(stackTop, "__setArgumentsLength", 3U);
+    r->callExportedFunctionWithName<0>(r.getStackTop(), "__setArgumentsLength", 3U);
     int32_t const diagStrOffset =
-        m.callExportedFunctionWithName<1>(stackTop, "formatDiagnostic", diag,
-                                          useColorfulDiagMessage ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE,
-                                          WasmFFIBool::WASM_TRUE)[0]
+        r->callExportedFunctionWithName<1>(r.getStackTop(), "formatDiagnostic", diag,
+                                           useColorfulDiagMessage ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE,
+                                           WasmFFIBool::WASM_TRUE)[0]
             .i32;
     errorMessage_ += getAsString(diagStrOffset) + "\n\n";
   }
@@ -263,25 +263,21 @@ FrontendCompiler::~FrontendCompiler() {
   }
 }
 
-FrontendCompiler::FrontendCompiler(Config const &config)
-    : logger(), m{logger}, stackTop(static_cast<uint8_t const *>(vb::getStackTop())) {
-  m.setStacktraceRecordCount(32U);
-  m.setContext(this);
-
+FrontendCompiler::FrontendCompiler(Config const &config) : r{this} {
   if (config.ascWasmPath) [[unlikely]] {
-    support::PerfRAII const r{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
+    support::PerfRAII const p{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
     std::string const wasmBytes = readBinaryFile(*config.ascWasmPath);
-    m.initFromBytecode(vb::Span<const uint8_t>{reinterpret_cast<uint8_t const *>(wasmBytes.data()), wasmBytes.size()},
-                       vb::Span<vb::NativeSymbol const>{warpo::frontend::getLinkedAPI().data(),
-                                                        warpo::frontend::getLinkedAPI().size()},
-                       true);
+    r->initFromBytecode(vb::Span<const uint8_t>{reinterpret_cast<uint8_t const *>(wasmBytes.data()), wasmBytes.size()},
+                        vb::Span<vb::NativeSymbol const>{warpo::frontend::getLinkedAPI().data(),
+                                                         warpo::frontend::getLinkedAPI().size()},
+                        true);
   } else {
-    support::PerfRAII const r{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
+    support::PerfRAII const p{support::PerfItemKind::CompilationHIR_PrepareWASMModule};
     static vb::WasmModule::CompileResult const embedJitCode =
-        m.compile(vb::Span<const uint8_t>{embed_asc_wasm.data(), embed_asc_wasm.size()},
-                  vb::Span<vb::NativeSymbol const>{warpo::frontend::getLinkedAPI().data(),
-                                                   warpo::frontend::getLinkedAPI().size()});
-    m.initFromCompiledBinary(
+        r->compile(vb::Span<const uint8_t>{embed_asc_wasm.data(), embed_asc_wasm.size()},
+                   vb::Span<vb::NativeSymbol const>{warpo::frontend::getLinkedAPI().data(),
+                                                    warpo::frontend::getLinkedAPI().size()});
+    r->initFromCompiledBinary(
         vb::Span<uint8_t const>{embedJitCode.getModule().data(), embedJitCode.getModule().size()},
         vb::Span<vb::NativeSymbol const>{},
         vb::Span<uint8_t const>{embedJitCode.getDebugSymbol().data(), embedJitCode.getDebugSymbol().size()});
@@ -292,42 +288,43 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
                                                              Config const &config) {
   try {
     support::PerfRAII initStat{support::PerfItemKind::CompilationHIR_Init};
-    m.start(stackTop);
-    m.callExportedFunctionWithName<0>(stackTop, "_initialize");
+    uint8_t const *const stackTop = r.getStackTop();
+    r->start(stackTop);
+    r->callExportedFunctionWithName<0>(stackTop, "_initialize");
 
-    int32_t const option = m.callExportedFunctionWithName<1>(stackTop, "newOptions")[0].i32;
-    m.callExportedFunctionWithName<1>(stackTop, "__pin", option);
+    int32_t const option = r->callExportedFunctionWithName<1>(stackTop, "newOptions")[0].i32;
+    r->callExportedFunctionWithName<1>(stackTop, "__pin", option);
 
     enum class RuntimeKind : uint32_t { Incremental = 2 };
     constexpr uint32_t stackSize = 32768U;
-    m.callExportedFunctionWithName<0>(stackTop, "setRuntime", option, RuntimeKind::Incremental);
-    m.callExportedFunctionWithName<0>(stackTop, "setStackSize", option, stackSize);
+    r->callExportedFunctionWithName<0>(stackTop, "setRuntime", option, RuntimeKind::Incremental);
+    r->callExportedFunctionWithName<0>(stackTop, "setStackSize", option, stackSize);
 
     enum class SetFeatureOn : uint32_t { OFF = 0, ON = 1 };
     uint32_t const asFeatureFlags = config.features.toASFeaturesFlags();
-    m.callExportedFunctionWithName<0>(stackTop, "setFeature", option, ~asFeatureFlags, SetFeatureOn::OFF);
-    m.callExportedFunctionWithName<0>(stackTop, "setFeature", option, asFeatureFlags, SetFeatureOn::ON);
+    r->callExportedFunctionWithName<0>(stackTop, "setFeature", option, ~asFeatureFlags, SetFeatureOn::OFF);
+    r->callExportedFunctionWithName<0>(stackTop, "setFeature", option, asFeatureFlags, SetFeatureOn::ON);
 
-    m.callExportedFunctionWithName<0>(stackTop, "setExportTable", option,
-                                      config.exportTable ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE);
-    m.callExportedFunctionWithName<0>(stackTop, "setExportRuntime", option,
-                                      config.exportRuntime ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE);
+    r->callExportedFunctionWithName<0>(stackTop, "setExportTable", option,
+                                       config.exportTable ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE);
+    r->callExportedFunctionWithName<0>(stackTop, "setExportRuntime", option,
+                                       config.exportRuntime ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE);
     if (config.exportStart.has_value())
-      m.callExportedFunctionWithName<0>(stackTop, "setExportStart", option, allocString(*config.exportStart));
-    m.callExportedFunctionWithName<0>(stackTop, "setDebugInfo", option, WasmFFIBool::WASM_TRUE);
-    m.callExportedFunctionWithName<0>(stackTop, "setSourceMap", option,
-                                      config.emitDebugLine ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE);
+      r->callExportedFunctionWithName<0>(stackTop, "setExportStart", option, allocString(*config.exportStart));
+    r->callExportedFunctionWithName<0>(stackTop, "setDebugInfo", option, WasmFFIBool::WASM_TRUE);
+    r->callExportedFunctionWithName<0>(stackTop, "setSourceMap", option,
+                                       config.emitDebugLine ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE);
     if (config.initialMemory.has_value())
-      m.callExportedFunctionWithName<0>(stackTop, "setInitialMemory", option, *config.initialMemory);
+      r->callExportedFunctionWithName<0>(stackTop, "setInitialMemory", option, *config.initialMemory);
 
     for (auto const &[useName, useValue] : config.uses)
-      m.callExportedFunctionWithName<0>(stackTop, "addGlobalAlias", option, allocString(useName),
-                                        allocString(useValue));
-    m.callExportedFunctionWithName<0>(stackTop, "setOptimizeLevelHints", option, config.optimizationLevel,
-                                      config.shrinkLevel);
+      r->callExportedFunctionWithName<0>(stackTop, "addGlobalAlias", option, allocString(useName),
+                                         allocString(useValue));
+    r->callExportedFunctionWithName<0>(stackTop, "setOptimizeLevelHints", option, config.optimizationLevel,
+                                       config.shrinkLevel);
 
-    int32_t const program = m.callExportedFunctionWithName<1>(stackTop, "newProgram", option)[0].i32;
-    m.callExportedFunctionWithName<1>(stackTop, "__pin", program);
+    int32_t const program = r->callExportedFunctionWithName<1>(stackTop, "newProgram", option)[0].i32;
+    r->callExportedFunctionWithName<1>(stackTop, "__pin", program);
     initStat.release();
 
     support::PerfRAII parseStat{support::PerfItemKind::CompilationHIR_Parsing};
@@ -363,19 +360,19 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
     parseStat.release();
 
     support::PerfRAII compileStat{support::PerfItemKind::CompilationHIR_Compilation};
-    m.callExportedFunctionWithName<0>(stackTop, "initializeProgram", program);
-    int32_t const compiled = m.callExportedFunctionWithName<1>(stackTop, "compile", program)[0].i32;
+    r->callExportedFunctionWithName<0>(stackTop, "initializeProgram", program);
+    int32_t const compiled = r->callExportedFunctionWithName<1>(stackTop, "compile", program)[0].i32;
     if (checkDiag(program, config.useColorfulDiagMessage))
       return {.m = {}, .errorMessage = errorMessage_};
     asModule_.set(BinaryenModule{reinterpret_cast<wasm::Module *>(
-        m.callExportedFunctionWithName<1>(stackTop, "getBinaryenModuleRef", compiled)[0].i64)});
+        r->callExportedFunctionWithName<1>(stackTop, "getBinaryenModuleRef", compiled)[0].i64)});
     compileStat.release();
     return {.m = std::move(asModule_), .errorMessage = errorMessage_};
   } catch (vb::TrapException const &e) {
-    logger << "Error: " << e.what() << vb::endStatement;
-    m.printStacktrace(logger);
+    r.getLogger() << "Error: " << e.what() << vb::endStatement;
+    r.printStacktrace();
   } catch (std::exception const &e) {
-    logger << "Error: " << e.what() << vb::endStatement;
+    r.getLogger() << "Error: " << e.what() << vb::endStatement;
   }
   return {.m = {}, .errorMessage = "AS wasm execution failed"};
 }

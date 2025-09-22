@@ -14,19 +14,17 @@
 #include <string_view>
 #include <vector>
 
+#include "warp_runner/warpRunner.hpp"
 #include "warpo/common/AsModule.hpp"
 #include "warpo/frontend/Compiler.hpp"
 #include "wasm-compiler/src/WasmModule/WasmModule.hpp"
-#include "wasm-compiler/src/utils/STDCompilerLogger.hpp"
 
 namespace warpo::frontend {
 
 class FrontendCompiler {
   enum class IsEntry : uint32_t { NO, YES };
 
-  vb::STDCompilerLogger logger;
-  vb::WasmModule m;
-  uint8_t const *stackTop;
+  WarpRunner r;
   std::map<std::string, std::filesystem::path> packageRootMap_{};
   size_t errorCount_ = 0;
   std::string errorMessage_;

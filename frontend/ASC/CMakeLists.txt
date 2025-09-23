@@ -12,6 +12,8 @@ file(GLOB_RECURSE asc_sources
   "${PROJECT_SOURCE_DIR}/assemblyscript/src/*.ts"
   "${PROJECT_SOURCE_DIR}/assemblyscript/std/*.ts"
   "${PROJECT_SOURCE_DIR}/assemblyscript/scripts/*.js"
+  "${PROJECT_SOURCE_DIR}/assemblyscript_extension/src/*.ts"
+  "${PROJECT_SOURCE_DIR}/assemblyscript_extension/std/*.ts"
 )
 set_source_files_properties(${asc_sources})
 

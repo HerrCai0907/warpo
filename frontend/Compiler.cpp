@@ -14,7 +14,6 @@
 #include "warpo/support/Color.hpp"
 #include "warpo/support/Opt.hpp"
 #include "warpo/support/Statistics.hpp"
-#include "wasm.h"
 
 namespace warpo::frontend {
 
@@ -89,6 +88,12 @@ static cli::Opt<uint32_t> initialMemoryOption{
     },
 };
 
+static cli::Opt<bool> enableExtensionsOption{
+    cli::Category::Frontend,
+    "--enableExtensions",
+    [](argparse::Argument &arg) -> void { arg.help("Enables experimental AssemblyScript extensions.").flag(); },
+};
+
 } // namespace warpo::frontend
 
 namespace warpo {
@@ -114,6 +119,7 @@ warpo::frontend::Config warpo::frontend::getDefaultConfig() {
       .shrinkLevel = 0U,
       .emitDebugLine = false,
       .useColorfulDiagMessage = support::isTTY(),
+      .enableExtensions = false,
   };
 }
 
@@ -133,6 +139,7 @@ frontend::CompilationResult frontend::compile() {
       // currently, AS only support debug line via source map
       .emitDebugLine = common::isEmitDebugLineInfo(),
       .useColorfulDiagMessage = support::isTTY(),
+      .enableExtensions = enableExtensionsOption.get(),
   };
 
   return compile(entryPaths.get(), config);

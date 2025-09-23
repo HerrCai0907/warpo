@@ -64,6 +64,8 @@ frontend::CompilationResult compile(nlohmann::json const &configJson, std::files
         static_cast<void>(0); // do nothing, incremental is default
       else if (flag == "--bindings raw")
         static_cast<void>(0); // do nothing, raw binding is default
+      else if (flag == "--enableExtensions")
+        config.enableExtensions = true;
     }
   }
   return frontend::compile(entries, config);
@@ -197,8 +199,8 @@ bool isAnyASCFlagsNotImplemented(nlohmann::json::array_t const &ascFlags, std::f
   if (ascFlags.empty())
     return false;
   constexpr const char *allowedASCFlags[] = {
-      "--exportStart _start", "--runtime incremental", "--initialMemory 2",
-      "--exportRuntime",      "--bindings raw",        "--use Date=",
+      "--exportStart _start", "--runtime incremental", "--initialMemory 2",  "--exportRuntime",
+      "--bindings raw",       "--use Date=",           "--enableExtensions",
   };
   for (auto const &flag : ascFlags) {
     if (0 == std::count(std::begin(allowedASCFlags), std::end(allowedASCFlags), flag.get<std::string>())) {

@@ -1,0 +1,15 @@
+{
+  "extends": "../../assemblyscript/std/assembly.json",
+  "compilerOptions": {
+    "target": "esnext",
+    "allowJs": false,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "useDefineForClassFields": false,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "esModuleInterop": true
+  },
+  "include": ["./**/*.ts"]
+}

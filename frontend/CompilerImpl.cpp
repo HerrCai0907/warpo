@@ -335,6 +335,10 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
         continue;
       parseFile(program, libSource, libraryPrefix + libName + extension, IsEntry::NO);
     }
+    if (config.enableExtensions) {
+      for (auto const &[libName, libSource] : warpo::frontend::embed_extension_library_sources)
+        parseFile(program, libSource, libraryPrefix + libName + extension, IsEntry::NO);
+    }
     parseFile(program, warpo::frontend::embed_library_sources.at("rt/index-incremental"),
               libraryPrefix + "rt/index-incremental" + extension, IsEntry::NO);
     parseLibStat.release();
@@ -360,7 +364,12 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
     parseStat.release();
 
     support::PerfRAII compileStat{support::PerfItemKind::CompilationHIR_Compilation};
+
+    if (config.enableExtensions)
+      r->callExportedFunctionWithName<0>(stackTop, "activeExtensions");
+
     r->callExportedFunctionWithName<0>(stackTop, "initializeProgram", program);
+
     int32_t const compiled = r->callExportedFunctionWithName<1>(stackTop, "compile", program)[0].i32;
     if (checkDiag(program, config.useColorfulDiagMessage))
       return {.m = {}, .errorMessage = errorMessage_};

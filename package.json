@@ -1,0 +1,36 @@
+{
+  "name": "@cdc/warpo",
+  "version": "0.0.0",
+  "description": "wasm optimizer designed for warp",
+  "type": "module",
+  "bin": {
+    "warpo": "bin/asc.js"
+  },
+  "scripts": {
+    "build": "cmake -S . -B build && cmake --build build --parallel",
+    "test:ut": "./build/passes/warpo_passes_test && ./build/support/warpo_support_test",
+    "test:as:snapshot": "./build/tests/frontend/warpo_frontend_test",
+    "test:opt:snapshot": "node tests/snapshot_diff/index.mjs",
+    "test:bootstrap:debug": "./tests/bootstrap/debug.sh",
+    "test:bootstrap:release": "./tests/bootstrap/release.sh",
+    "test": "npm run test:ut && npm run test:as:snapshot && npm run test:opt:snapshot && npm run test:bootstrap:debug && npm run test:bootstrap:release",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs"
+  },
+  "publishConfig": {
+  },
+  "license": "MIT",
+  "keywords": [],
+  "author": "congcong.cai@bmw.com",
+  "files": [
+    "bin",
+    "model"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "assemblyscript": "^0.28.4",
+    "diff": "^7.0.0",
+    "typescript": "^5.8.3",
+    "vitepress": "^1.6.3"
+  }
+}

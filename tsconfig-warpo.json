@@ -1,0 +1,13 @@
+{
+  "extends": "assemblyscript/tsconfig-base.json",
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "noLib": true,
+    "allowJs": false,
+    "typeRoots": ["assemblyscript/std/types", "assemblyscript_extension/types"],
+    "types": ["assembly", "extension"],
+    "baseUrl": ".",
+    "paths": { "*": ["./assembly/*"] }
+  }
+}

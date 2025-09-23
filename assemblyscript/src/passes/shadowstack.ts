@@ -162,7 +162,7 @@ function matchPattern(module: Module, expr: ExpressionRef): ExpressionRef {
   let isFound = false;
   while (
     _BinaryenExpressionGetId(expr) == ExpressionId.Call &&
-    module.readStringCached(_BinaryenCallGetTarget(expr)) == BuiltinNames.tostack
+    module.readStringCached(_BinaryenCallGetTarget(expr)) == "~lib/rt/__tostack"
   ) {
     assert(_BinaryenCallGetNumOperands(expr) == 1);
     expr = _BinaryenCallGetOperandAt(expr, 0);

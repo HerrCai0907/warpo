@@ -58,7 +58,8 @@ import {
   isConstExpressionNaN,
   ensureType,
   createType,
-  getConstValueInteger
+  getConstValueInteger,
+  isConstZero
 } from "./module";
 
 import {
@@ -215,13 +216,10 @@ import {
 } from "./passes/rtrace";
 
 import {
-  ShadowStackPass
-} from "./passes/shadowstack";
-
-import {
   liftRequiresExportRuntime,
   lowerRequiresExportRuntime
 } from "./bindings/js";
+import { markDataElementImmutable } from "./warpo";
 
 /** Features enabled by default. */
 export const defaultFeatures = Feature.MutableGlobals
@@ -470,10 +468,6 @@ export class Compiler extends DiagnosticEmitter {
   pendingElements: Set<Element> = new Set();
   /** Elements, that are module exports, already processed */
   doneModuleExports: Set<Element> = new Set();
-  /** Shadow stack reference. */
-  shadowStack!: ShadowStackPass;
-  /** Whether the module has custom function exports. */
-  hasCustomFunctionExports: bool = false;
   /** Whether the module would use the exported runtime to lift/lower. */
   desiresExportRuntime: bool = false;
 
@@ -523,7 +517,6 @@ export class Compiler extends DiagnosticEmitter {
     startFunctionInstance.internalName = BuiltinNames.start;
     this.currentFlow = startFunctionInstance.flow;
     this.currentBody = new Array<ExpressionRef>();
-    this.shadowStack = new ShadowStackPass(this);
   }
 
   /** Performs compilation of the underlying {@link Program} to a {@link Module}. */
@@ -751,9 +744,9 @@ export class Compiler extends DiagnosticEmitter {
       }
     }
 
-    // Run custom passes
     if (hasShadowStack) {
-      this.shadowStack.walkModule();
+      this.module.addFunctionImport(BuiltinNames.localToStack, BuiltinNames.externalFuncName, BuiltinNames.localToStack, TypeRef.I32, TypeRef.I32);
+      this.module.addFunctionImport(BuiltinNames.tmpToStack, BuiltinNames.externalFuncName, BuiltinNames.tmpToStack, TypeRef.I32, TypeRef.I32);
     }
     if (program.lookup("ASC_RTRACE") != null) {
       new RtraceMemory(this).walkModule();
@@ -964,11 +957,6 @@ export class Compiler extends DiagnosticEmitter {
             let exportName = prefix + name;
             if (!module.hasExport(exportName)) {
               module.addFunctionExport(functionInstance.internalName, exportName);
-              this.hasCustomFunctionExports = true;
-              let hasManagedOperands = signature.hasManagedOperands;
-              if (hasManagedOperands) {
-                this.shadowStack.noteExport(exportName, signature.getManagedOperandIndices());
-              }
               if (!this.desiresExportRuntime) {
                 let thisType = signature.thisType;
                 if (
@@ -2097,6 +2085,7 @@ export class Compiler extends DiagnosticEmitter {
       assert(rtInstance.writeField("_index", index, buf));
       assert(rtInstance.writeField("_env", 0, buf));
       instance.memorySegment = memorySegment = this.addRuntimeMemorySegment(buf);
+      markDataElementImmutable(i64_add(memorySegment.offset, i64_new(program.totalOverhead)), rtInstance.nextMemoryOffset);
     }
     return i64_add(memorySegment.offset, i64_new(program.totalOverhead));
   }
@@ -6413,7 +6402,7 @@ export class Compiler extends DiagnosticEmitter {
     // Create a new inline flow and use it to compile the function as a block
     let previousFlow = this.currentFlow;
     let flow = Flow.createInline(previousFlow.targetFunction, instance);
-    let body = [];
+    let body: ExpressionRef[] = [];
 
     if (thisArg) {
       let parent = assert(instance.parent);
@@ -6813,7 +6802,7 @@ export class Compiler extends DiagnosticEmitter {
       if (thisType.isManaged) {
         let operand = operands[0];
         if (this.needToStack(operand)) {
-          operands[operandIndex] = module.tostack(operand);
+          operands[operandIndex] = module.tmp_to_stack(operand);
         }
       }
       ++operandIndex;
@@ -6826,7 +6815,7 @@ export class Compiler extends DiagnosticEmitter {
       if (paramType.isManaged) {
         let operand = operands[operandIndex];
         if (this.needToStack(operand)) {
-          operands[operandIndex] = module.tostack(operand);
+          operands[operandIndex] = module.tmp_to_stack(operand);
         }
       }
       ++operandIndex;
@@ -8127,7 +8116,7 @@ export class Compiler extends DiagnosticEmitter {
 
       // Compile to a `StaticArray<string>#join("") in the general case
       let expressionPositions = new Array<i32>(numExpressions);
-      let values = new Array<usize>();
+      let values = new Array<ExpressionRef>();
       if (parts[0].length > 0) values.push(this.ensureStaticString(parts[0]));
       for (let i = 1; i < numParts; ++i) {
         expressionPositions[i - 1] = values.length;
@@ -8355,13 +8344,15 @@ export class Compiler extends DiagnosticEmitter {
     assert(dataStartProperty.isField && dataStartProperty.memoryOffset >= 0);
     for (let i = 0; i < length; ++i) {
       // this[i] = value
-      stmts.push(
+      if (!this.canOptimizeZeroInitialization(values[i])) {
+        stmts.push(
         module.call(indexedSet.internalName, [
           module.local_get(tempThis.index, arrayTypeRef),
           module.i32(i),
           values[i]
         ], TypeRef.None)
-      );
+        );
+      }
     }
     // -> tempThis
     stmts.push(
@@ -8503,13 +8494,15 @@ export class Compiler extends DiagnosticEmitter {
     );
     for (let i = 0; i < length; ++i) {
       // array[i] = value
-      stmts.push(
-        module.call(indexedSet.internalName, [
-          module.local_get(tempThis.index, arrayTypeRef),
-          module.i32(i),
-          values[i]
-        ], TypeRef.None)
-      );
+      if (!this.canOptimizeZeroInitialization(values[i])) {
+        stmts.push(
+          module.call(indexedSet.internalName, [
+            module.local_get(tempThis.index, arrayTypeRef),
+            module.i32(i),
+            values[i]
+          ], TypeRef.None)
+        );
+      }
     }
     // -> tempThis
     stmts.push(
@@ -10025,6 +10018,14 @@ export class Compiler extends DiagnosticEmitter {
 
   // === Specialized code generation ==============================================================
 
+  /** Check if possible to optimize the active initialization away if it's zero */
+  canOptimizeZeroInitialization(valueExpr: ExpressionRef): bool {
+    const runtime = this.options.runtime;
+    return (runtime == Runtime.Incremental || runtime == Runtime.Stub)
+      ? isConstZero(valueExpr)
+      : false;
+  }
+
   /** Makes a constant zero of the specified type. */
   makeZero(type: Type): ExpressionRef {
     let module = this.module;
@@ -10372,6 +10373,7 @@ export class Compiler extends DiagnosticEmitter {
       let parameterIndex = fieldPrototype.parameterIndex;
 
       // Defer non-parameter fields until parameter fields are initialized
+      // Since non-parameter may depend on parameter fields
       if (parameterIndex < 0) {
         if (!nonParameterFields) nonParameterFields = new Array();
         nonParameterFields.push(property);
@@ -10407,16 +10409,25 @@ export class Compiler extends DiagnosticEmitter {
         let initializerNode = fieldPrototype.initializerNode;
         assert(fieldPrototype.parameterIndex < 0);
         let setterInstance = assert(field.setterInstance);
-        let expr = this.makeCallDirect(setterInstance, [
-          module.local_get(thisLocalIndex, sizeTypeRef),
-          initializerNode // use initializer if present, otherwise initialize with zero
-            ? this.compileExpression(initializerNode, fieldType, Constraints.ConvImplicit)
-            : this.makeZero(fieldType)
-        ], field.identifierNode, true);
-        if (this.currentType != Type.void) { // in case
-          expr = module.drop(expr);
+
+        if (initializerNode) {
+          // Explicit initializer
+          // Check if we need to initialize this field
+          const valueExpr: ExpressionRef = this.compileExpression(initializerNode, fieldType, Constraints.ConvImplicit);
+          // Memory will be filled with 0 on itcms.__new
+          // Memory grow will default to initialized with 0 as wasm spec
+          // So, optimize the active initialization away if it's zero
+          if (!this.canOptimizeZeroInitialization(valueExpr)) {
+            let expr = this.makeCallDirect(setterInstance, [
+              module.local_get(thisLocalIndex, sizeTypeRef),
+              valueExpr
+            ], field.identifierNode, true);
+            if (this.currentType != Type.void) { // in case
+              expr = module.drop(expr);
+            }
+            stmts.push(expr);
+          }
         }
-        stmts.push(expr);
       }
     }
 

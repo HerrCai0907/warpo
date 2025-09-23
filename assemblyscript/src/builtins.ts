@@ -115,6 +115,8 @@ import {
 
 /** Internal names of various compiler built-ins. */
 export namespace BuiltinNames {
+  // external name
+  export const externalFuncName = "as-builtin-fn";
 
   // compiler-generated
   export const start = "~start";
@@ -721,7 +723,8 @@ export namespace BuiltinNames {
   export const rtti_base = "~lib/rt/__rtti_base";
   export const visit_globals = "~lib/rt/__visit_globals";
   export const visit_members = "~lib/rt/__visit_members";
-  export const tostack = "~lib/rt/__tostack";
+  export const localToStack = "~lib/rt/__localtostack";
+  export const tmpToStack = "~lib/rt/__tmptostack";
 
   // std/number.ts
   export const NaN = "~lib/number/NaN";
@@ -3652,7 +3655,7 @@ function builtin_call_indirect(ctx: BuiltinFunctionContext): ExpressionRef {
   for (let i = 0; i < numOperands; ++i) {
     operandExprs[i] = compiler.compileExpression(operands[1 + i], Type.auto);
     if (compiler.currentType.isManaged) {
-      operandExprs[i] = module.tostack(operandExprs[i]);
+      operandExprs[i] = module.tmp_to_stack(operandExprs[i]);
     }
     paramTypeRefs[i] = compiler.currentType.toRef();
   }
@@ -3750,7 +3753,7 @@ function builtin_function_call(ctx: BuiltinFunctionContext): ExpressionRef {
   let functionArg = compiler.compileExpression(assert(ctx.thisOperand), ftype, Constraints.ConvImplicit);
   let thisOperand = assert(ctx.operands.shift());
   let thisType = signature.thisType;
-  let thisArg: usize = 0;
+  let thisArg: ExpressionRef = 0;
   if (thisType) {
     thisArg = compiler.compileExpression(thisOperand, thisType, Constraints.ConvImplicit);
   } else if (thisOperand.kind != NodeKind.Null) {

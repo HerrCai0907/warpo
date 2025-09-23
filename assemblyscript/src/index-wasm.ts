@@ -39,7 +39,7 @@ import {
   formatDiagnosticMessage
 } from "./diagnostics";
 
-import { Module } from "./module";
+import { Module, ModuleRef } from "./module";
 import { Program } from "./program";
 import { Source } from "./ast";
 
@@ -369,7 +369,7 @@ export function buildJS(program: Program, esm: bool): string {
 }
 
 /** Gets the Binaryen module reference of a module. */
-export function getBinaryenModuleRef(module: Module): usize {
+export function getBinaryenModuleRef(module: Module): ModuleRef {
   return module.ref;
 }
 
@@ -378,13 +378,13 @@ export function validate(module: Module): bool {
   return module.validate();
 }
 
-/** Optimizes a module. */
-export function optimize(
-  module: Module,
-  optimizeLevel: i32,
-  shrinkLevel: i32,
-  debugInfo: bool = false,
-  zeroFilledMemory: bool = false
-): void {
-  module.optimize(optimizeLevel, shrinkLevel, debugInfo, zeroFilledMemory);
-}
+// /** Optimizes a module. */
+// export function optimize(
+//   module: Module,
+//   optimizeLevel: i32,
+//   shrinkLevel: i32,
+//   debugInfo: bool = false,
+//   zeroFilledMemory: bool = false
+// ): void {
+//   module.optimize(optimizeLevel, shrinkLevel, debugInfo, zeroFilledMemory);
+// }

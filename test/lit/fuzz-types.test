@@ -1,0 +1,60 @@
+;; RUN: wasm-fuzz-types -v --seed=0 | filecheck %s
+
+;; CHECK:      Running with seed 0
+;; CHECK-NEXT: Built 20 types:
+;; CHECK-NEXT: (rec
+;; CHECK-NEXT:  (type $0 (sub (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $1 (sub (shared (array (ref null $7)))))
+;; CHECK-NEXT:  (type $2 (sub (shared (func (result (ref $0))))))
+;; CHECK-NEXT:  (type $3 (sub $0 (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $4 (sub (array f32)))
+;; CHECK-NEXT:  (type $5 (sub $0 (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $6 (sub $2 (shared (func (result (ref $3))))))
+;; CHECK-NEXT:  (type $7 (sub (shared (descriptor $9 (struct (field (mut f32)) (field f64) (field (mut i32)))))))
+;; CHECK-NEXT:  (type $8 (sub $2 (shared (func (result (ref $0))))))
+;; CHECK-NEXT:  (type $9 (shared (describes $7 (descriptor $12 (struct (field (ref $5)) (field i64) (field (mut f32)) (field (mut (ref null $0))) (field (mut f64)) (field i64))))))
+;; CHECK-NEXT:  (type $10 (sub (struct (field i8) (field f32))))
+;; CHECK-NEXT:  (type $11 (sub (shared (struct (field i64) (field v128) (field (mut i16)) (field i32) (field (mut (ref (shared array))))))))
+;; CHECK-NEXT:  (type $12 (shared (describes $9 (struct))))
+;; CHECK-NEXT: )
+;; CHECK-NEXT: (type $13 (array (ref $11)))
+;; CHECK-NEXT: (rec
+;; CHECK-NEXT:  (type $14 (sub final $10 (struct (field i8) (field f32) (field (ref null (shared any))))))
+;; CHECK-NEXT:  (type $15 (sub (shared (struct (field i64) (field (ref (shared array))) (field (ref $0)) (field (mut i32)) (field i64)))))
+;; CHECK-NEXT: )
+;; CHECK-NEXT: (rec
+;; CHECK-NEXT:  (type $16 (sub (shared (struct (field (ref $1))))))
+;; CHECK-NEXT:  (type $17 (sub $5 (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $18 (sub final $3 (shared (array (mut i32)))))
+;; CHECK-NEXT: )
+;; CHECK-NEXT: (type $19 (sub final $16 (shared (struct (field (ref $1)) (field (mut v128)) (field (mut (ref $17))) (field v128)))))
+;; CHECK-NEXT: 
+;; CHECK-NEXT: Inhabitable types:
+;; CHECK-NEXT: 
+;; CHECK-NEXT: Built 20 types:
+;; CHECK-NEXT: (rec
+;; CHECK-NEXT:  (type $0 (sub (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $1 (sub (shared (array (ref null $7)))))
+;; CHECK-NEXT:  (type $2 (sub (shared (func (result (ref $0))))))
+;; CHECK-NEXT:  (type $3 (sub $0 (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $4 (sub (array f32)))
+;; CHECK-NEXT:  (type $5 (sub $0 (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $6 (sub $2 (shared (func (result (ref $3))))))
+;; CHECK-NEXT:  (type $7 (sub (shared (descriptor $9 (struct (field (mut f32)) (field f64) (field (mut i32)))))))
+;; CHECK-NEXT:  (type $8 (sub $2 (shared (func (result (ref $0))))))
+;; CHECK-NEXT:  (type $9 (shared (describes $7 (descriptor $12 (struct (field (ref $5)) (field i64) (field (mut f32)) (field (mut (ref null $0))) (field (mut f64)) (field i64))))))
+;; CHECK-NEXT:  (type $10 (sub (struct (field i8) (field f32))))
+;; CHECK-NEXT:  (type $11 (sub (shared (struct (field i64) (field v128) (field (mut i16)) (field i32) (field (mut (ref (shared array))))))))
+;; CHECK-NEXT:  (type $12 (shared (describes $9 (struct))))
+;; CHECK-NEXT: )
+;; CHECK-NEXT: (type $13 (array (ref $11)))
+;; CHECK-NEXT: (rec
+;; CHECK-NEXT:  (type $14 (sub final $10 (struct (field i8) (field f32) (field (ref null (shared any))))))
+;; CHECK-NEXT:  (type $15 (sub (shared (struct (field i64) (field (ref (shared array))) (field (ref $0)) (field (mut i32)) (field i64)))))
+;; CHECK-NEXT: )
+;; CHECK-NEXT: (rec
+;; CHECK-NEXT:  (type $16 (sub (shared (struct (field (ref $1))))))
+;; CHECK-NEXT:  (type $17 (sub $5 (shared (array (mut i32)))))
+;; CHECK-NEXT:  (type $18 (sub final $3 (shared (array (mut i32)))))
+;; CHECK-NEXT: )
+;; CHECK-NEXT: (type $19 (sub final $16 (shared (struct (field (ref $1)) (field (mut v128)) (field (mut (ref $17))) (field v128)))))

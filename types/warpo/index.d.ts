@@ -1,4 +1,4 @@
-/// <reference path="../../../assemblyscript/std/assembly/index.d.ts" />
+/// <reference path="../../assemblyscript/std/assembly/index.d.ts" />
 
 declare namespace utf8 {
   class ConstStr {

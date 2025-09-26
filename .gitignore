@@ -1,7 +1,10 @@
-/build*
 /.cache
+/.idea
 /.vscode
-/bin
+
+/build*
+/dist
+
 /node_modules
 
 /docs/.vitepress/dist

@@ -1,13 +1,15 @@
 {
-  "name": "@cdc/warpo",
+  "name": "warpo",
   "version": "0.0.0",
-  "description": "wasm optimizer designed for warp",
+  "description": "next generation AssemblyScript compiler with optimizations",
   "type": "module",
   "bin": {
-    "warpo": "bin/asc.js"
+    "warpo": "dist/warpo.js"
   },
   "scripts": {
-    "build": "cmake -S . -B build && cmake --build build --parallel",
+    "build:ts": "tsc -p tools/scripts/tsconfig.json",
+    "build:cpp": "cmake -S . -B build && cmake --build build --parallel",
+    "build": "npm run build:ts && npm run build:cpp",
     "test:ut": "./build/passes/warpo_passes_test && ./build/support/warpo_support_test",
     "test:as:snapshot": "./build/tests/frontend/warpo_frontend_test",
     "test:opt:snapshot": "node tests/snapshot_diff/index.mjs",
@@ -17,14 +19,18 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs"
   },
-  "publishConfig": {
-  },
-  "license": "MIT",
-  "keywords": [],
+  "license": "Apache-2.0",
+  "keywords": [
+    "assemblyscript",
+    "wasm",
+    "webassembly",
+    "compiler"
+  ],
   "author": "congcong.cai@bmw.com",
   "files": [
-    "bin",
-    "model"
+    "dist",
+    "types",
+    "tsconfig-warpo.json"
   ],
   "devDependencies": {
     "@types/node": "^22.15.21",

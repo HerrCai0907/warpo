@@ -22,8 +22,7 @@ jobs:
       - uses: ./.github/action/build
         with:
           CMAKE_ARGS: "-DWARPO_RELEASE=ON"
-      - name: Set Artifact Name
-        id: set_artifact_name
+      - id: release_info
         run: |
           if [ "${{ runner.os }}" == "macOS" ]; then
             echo "OS=macos" >> $GITHUB_OUTPUT
@@ -31,11 +30,23 @@ jobs:
             echo "OS=linux" >> $GITHUB_OUTPUT
           fi
           echo "CPU=$(uname -m)" >> $GITHUB_OUTPUT
+          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
       - name: Pack build/warpo directory
         run: |
-          tar -czvf build/warpo-${{ github.ref_name }}-${{ steps.set_artifact_name.outputs.OS }}-${{ steps.set_artifact_name.outputs.CPU }}.tar.gz -C build warpo
+          tar -czvf build/warpo-${{ steps.release_info.outputs.VERSION }}-${{ steps.release_info.outputs.OS }}-${{ steps.release_info.outputs.CPU }}.tar.gz -C build warpo
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/warpo-${{ github.ref_name }}-${{ steps.set_artifact_name.outputs.OS }}-${{ steps.set_artifact_name.outputs.CPU }}.tar.gz
+            build/warpo-${{ steps.release_info.outputs.VERSION }}-${{ steps.release_info.outputs.OS }}-${{ steps.release_info.outputs.CPU }}.tar.gz
+      - name: Publish to NPM
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          set -ex
+          npm version ${{ steps.release_info.outputs.VERSION }} --git-tag-version false
+          echo "//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}" >> .npmrc
+          if ${{ github.event.release.prerelease }}; then
+            npm publish --tag pre
+          else
+            npm publish
+          fi

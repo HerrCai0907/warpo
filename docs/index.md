@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "WARPO"
-  tagline: "wasm optimizer designed for AssemblyScript and WARP"
+  tagline: "next generation AssemblyScript compiler with optimizations"
   actions:
     - theme: brand
       text: Lowering Pass

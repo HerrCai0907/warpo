@@ -2,25 +2,38 @@
 
 wasm optimizer designed for wasm-compiler
 
-## build
+## quick start
+
+config `tsconfig.json` like below.
+
+```json
+{
+  "extends": "warpo/tsconfig-warpo.json",
+  "include": ["./**/*.ts"]
+}
+```
+
+write ts code in `assembly/index.ts`
+
+```bash
+export function add(a: i32, b: i32): i32 {
+  return a + b;
+}
+```
+
+```bash
+node node_modules/.bin/warpo assembly/index.ts -o build/debug.wat
+node node_modules/.bin/warpo assembly/index.ts -o build/release.wasm --optimizeLevel 3 --shrinkLevel 2
+npx warpo assembly/index.ts -o build/debug.wat # simplify with npx
+npx warpo -h # for more cli options
+```
+
+## language
+
+- [Assemblyscript](https://www.assemblyscript.org/)
+- warpo new features: WIP
+- [warpo optimization](https://wasm-ecosystem.github.io/warpo/)
+
+## developer
 
 see [CONTRIBUTING](./CONTRIBUTING.md)
-
-## repo structure
-
-### for dev
-
-- include: header files exposed to other components.
-- tests: e2e test cases and scripts.
-
-### major logic
-
-- assemblyscript: code base of assemblyscript, modify from https://github.com/AssemblyScript/assemblyscript/.
-- assemblyscript_extension: experimental functions for AS.
-- common: function related common code, most of them are cli options.
-- frontend: assemblyscript frontend compiler.
-- passes: additional optimization passes.
-  - passes/GC: lowering passes for GC related operation.
-  - passes/helper: compilation and optimization related algorithm.
-  - unittests: useful functions for ut.
-- support: wasm unrelated common code, contains algorithm, ADT, os abstract layer...

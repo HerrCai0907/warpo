@@ -30,7 +30,9 @@
   "files": [
     "dist",
     "types",
-    "tsconfig-warpo.json"
+    "tsconfig-warpo.json",
+    "assemblyscript/tsconfig-base.json",
+    "assemblyscript/std/types/assembly"
   ],
   "devDependencies": {
     "@types/node": "^22.15.21",

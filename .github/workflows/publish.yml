@@ -20,9 +20,9 @@ jobs:
           node-version: "22"
       - run: npm ci
 
-      - uses: ./.github/action/build
-        with:
-          CMAKE_ARGS: "-DWARPO_RELEASE=ON"
+      # - uses: ./.github/action/build
+      #   with:
+      #     CMAKE_ARGS: "-DWARPO_RELEASE=ON"
       - run: npm run build:ts
 
       - id: release_info
@@ -34,14 +34,14 @@ jobs:
           fi
           echo "CPU=$(uname -m)" >> $GITHUB_OUTPUT
           echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-      - name: Pack build/warpo directory
-        run: |
-          tar -czvf build/warpo-${{ steps.release_info.outputs.VERSION }}-${{ steps.release_info.outputs.OS }}-${{ steps.release_info.outputs.CPU }}.tar.gz -C build warpo
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            build/warpo-${{ steps.release_info.outputs.VERSION }}-${{ steps.release_info.outputs.OS }}-${{ steps.release_info.outputs.CPU }}.tar.gz
+      # - name: Pack build/warpo directory
+      #   run: |
+      #     tar -czvf build/warpo-${{ steps.release_info.outputs.VERSION }}-${{ steps.release_info.outputs.OS }}-${{ steps.release_info.outputs.CPU }}.tar.gz -C build warpo
+      # - name: Upload to GitHub Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: |
+      #       build/warpo-${{ steps.release_info.outputs.VERSION }}-${{ steps.release_info.outputs.OS }}-${{ steps.release_info.outputs.CPU }}.tar.gz
       - name: Publish to NPM
         if: matrix.os == 'ubuntu-latest'
         run: |

@@ -23,11 +23,14 @@ struct IInfoPrinter {
   virtual std::optional<std::string> onExpr(wasm::Expression *expr) const = 0;
 };
 
-struct EmptyInfoPrinter : public IInfoPrinter {
-  std::optional<std::string> onExpr(wasm::Expression *) const override { return std::nullopt; }
+struct EmptyInfoPrinter final : public IInfoPrinter {
+  std::optional<std::string> onExpr(wasm::Expression *expr) const override {
+    static_cast<void>(expr);
+    return std::nullopt;
+  }
 };
 
-struct BasicBlock {
+struct BasicBlock final {
   using iterator = std::vector<wasm::Expression *>::const_iterator;
   // Iterate through instructions.
   iterator begin() const { return insts.cbegin(); }
@@ -49,7 +52,7 @@ struct BasicBlock {
   void print(std::ostream &os, wasm::Module *wasm, size_t start, IInfoPrinter const &infoPrinter) const;
 
 private:
-  wasm::Index index;
+  wasm::Index index = 0U;
   bool entry = false;
   bool exit = false;
   std::vector<wasm::Expression *> insts;
@@ -73,7 +76,7 @@ struct CFG {
   reverse_iterator rbegin() const { return blocks.rbegin(); }
   reverse_iterator rend() const { return blocks.rend(); }
 
-  const BasicBlock &operator[](size_t i) const { return *(begin() + i); }
+  const BasicBlock &operator[](size_t i) const { return blocks[i]; }
 
   void print(std::ostream &os, wasm::Module *wasm, IInfoPrinter const &infoPrinter) const;
 
@@ -84,13 +87,17 @@ struct CFG {
 
   BasicBlock const *getEntry() const {
     assert(!blocks.empty());
-    assert(blocks.front().isEntry() && "First block must be entry");
-    return &blocks.front();
+    for (const BasicBlock &block : blocks) {
+      if (block.isEntry()) {
+        return &block;
+      }
+    }
+    return nullptr;
   }
   BasicBlock const *getExit() const {
-    for (auto it = blocks.rbegin(); it != blocks.rend(); ++it) {
-      if (it->isExit())
-        return &(*it);
+    for (const BasicBlock &block : blocks) {
+      if (block.isExit())
+        return &block;
     }
     return nullptr;
   }
@@ -130,7 +137,7 @@ struct CFGTestWrapper {
   size_t addBB() {
     size_t const index = size();
     CFGForTest::blocks(raw_).emplace_back();
-    BasicBlockForTest::index(CFGForTest::blocks(raw_).back()) = index;
+    BasicBlockForTest::index(CFGForTest::blocks(raw_).back()) = static_cast<wasm::Index>(index);
     return index;
   }
 

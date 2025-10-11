@@ -51,13 +51,13 @@ struct ToStackReplacer : public wasm::WalkerPass<wasm::PostWalker<ToStackReplace
       return self->enter(expr);
   }
   static void doLeaveCallLike(ToStackReplacer *self, wasm::Expression **currp) {
-    if (auto expr = (*currp)->dynCast<wasm::Call>())
+    if ((*currp)->dynCast<wasm::Call>() != nullptr)
       return self->leave();
-    if (auto expr = (*currp)->dynCast<wasm::CallIndirect>())
+    if ((*currp)->dynCast<wasm::CallIndirect>() != nullptr)
       return self->leave();
   }
   static void scan(ToStackReplacer *self, wasm::Expression **currp) {
-    wasm::Expression *curr = *currp;
+    wasm::Expression const *const curr = *currp;
     if (curr->is<wasm::Call>() || curr->is<wasm::CallIndirect>())
       self->pushTask(ToStackReplacer::doLeaveCallLike, currp);
 
@@ -146,12 +146,11 @@ private:
     size_t const size = currentAllocatedSlots_.size();
     currentAllocatedSlots_.resize(size + 1U);
     currentAllocatedSlots_.set(size, true);
-    wasm::Function *const f = getFunction();
     (*maxShadowStackOffsets_)[getFunction()] = ShadowStackElementSize * currentAllocatedSlots_.size();
     return size;
   }
 
-  ToStackReplacer(std::shared_ptr<MaxShadowStackOffsets> const &maxShadowStackOffsets)
+  explicit ToStackReplacer(std::shared_ptr<MaxShadowStackOffsets> const &maxShadowStackOffsets)
       : maxShadowStackOffsets_(maxShadowStackOffsets) {}
 };
 

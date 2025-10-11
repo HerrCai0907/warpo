@@ -26,10 +26,10 @@ namespace {
 std::string getAsString(uint32_t ptr, vb::WasmModule *ctx) {
   if (ptr == 0U)
     return "<<NULL>>";
-  uint8_t const *header = ctx->getLinearMemoryRegion(ptr - 20U, 20);
+  uint8_t const *const header = ctx->getLinearMemoryRegion(ptr - 20U, 20);
   uint32_t size = 0;
   std::memcpy(&size, header + 16, sizeof(size));
-  uint8_t const *content = ctx->getLinearMemoryRegion(ptr, size);
+  uint8_t const *const content = ctx->getLinearMemoryRegion(ptr, size);
   size /= 2U;
 
   std::stringstream ss{};
@@ -68,6 +68,8 @@ void traceForLink(uint32_t ptr, uint32_t n, double d1, double d2, double d3, dou
       break;
     case 5:
       ss << " " << d5;
+      break;
+    default:
       break;
     }
   }

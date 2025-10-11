@@ -68,11 +68,11 @@ void FrontendCompiler::parseFile(int32_t const program, std::optional<std::strin
   }
 }
 
-std::string FrontendCompiler::getAsString(int32_t ptr) {
-  uint8_t const *header = r->getLinearMemoryRegion(ptr - 20U, 20);
+std::string FrontendCompiler::getAsString(uint32_t ptr) {
+  uint8_t const *const header = r->getLinearMemoryRegion(ptr - 20U, 20U);
   uint32_t size = 0;
   std::memcpy(&size, header + 16, sizeof(size));
-  uint8_t const *content = r->getLinearMemoryRegion(ptr, size);
+  uint8_t const *const content = r->getLinearMemoryRegion(ptr, size);
 
   std::u16string utf16Str;
   utf16Str.resize(size / 2);
@@ -84,16 +84,18 @@ std::u16string FrontendCompiler::utf8ToUtf16(std::string const &utf8Str) {
   if (utf8Str.empty())
     return std::u16string();
   const llvm::UTF8 *src = reinterpret_cast<const llvm::UTF8 *>(utf8Str.data());
-  const llvm::UTF8 *srcEnd = src + utf8Str.size();
+  llvm::UTF8 const *const srcEnd = src + utf8Str.size();
   std::u16string utf16Str;
   utf16Str.resize(utf8Str.size());
   llvm::UTF16 *dst = reinterpret_cast<llvm::UTF16 *>(utf16Str.data());
-  llvm::UTF16 *dstEnd = dst + utf16Str.size();
+  llvm::UTF16 *const dstEnd = dst + utf16Str.size();
 
   if (llvm::ConvertUTF8toUTF16(&src, srcEnd, &dst, dstEnd, llvm::strictConversion) != llvm::conversionOK)
     throw std::runtime_error("UTF8 to UTF16 conversion failed");
-  // Resize the string to the actual number of UTF-16 code units written
-  utf16Str.resize(dst - reinterpret_cast<llvm::UTF16 *>(utf16Str.data()));
+  // Resize the string to the actual number of UTF-16 code units written.
+  // The pointer subtraction yields a ptrdiff_t; it must be non-negative and fit into size_t.
+  ptrdiff_t const written16 = dst - reinterpret_cast<llvm::UTF16 *>(utf16Str.data());
+  utf16Str.resize(static_cast<std::u16string::size_type>(written16));
   return utf16Str;
 }
 
@@ -101,16 +103,17 @@ std::string FrontendCompiler::utf16ToUtf8(std::u16string const &utf16Str) {
   if (utf16Str.empty())
     return std::string();
   const llvm::UTF16 *src = reinterpret_cast<const llvm::UTF16 *>(utf16Str.data());
-  const llvm::UTF16 *srcEnd = src + utf16Str.size();
+  llvm::UTF16 const *const srcEnd = src + utf16Str.size();
   std::string utf8Str;
   utf8Str.resize(utf16Str.size() * 4); // UTF-8 can be up to 4 bytes per Unicode code point
   llvm::UTF8 *dst = reinterpret_cast<llvm::UTF8 *>(utf8Str.data());
-  llvm::UTF8 *dstEnd = dst + utf8Str.size();
+  llvm::UTF8 *const dstEnd = dst + utf8Str.size();
 
   if (llvm::ConvertUTF16toUTF8(&src, srcEnd, &dst, dstEnd, llvm::strictConversion) != llvm::conversionOK)
     throw std::runtime_error("UTF16 to UTF8 conversion failed");
-  // Resize the string to the actual number of UTF-8 bytes written
-  utf8Str.resize(dst - reinterpret_cast<llvm::UTF8 *>(utf8Str.data()));
+  // Resize the string to the actual number of UTF-8 bytes written.
+  ptrdiff_t const written8 = dst - reinterpret_cast<llvm::UTF8 *>(utf8Str.data());
+  utf8Str.resize(static_cast<std::string::size_type>(written8));
   return utf8Str;
 }
 
@@ -137,7 +140,7 @@ std::optional<std::filesystem::path> FrontendCompiler::findPackageRoot(std::file
   if (sourcePackage.has_value()) {
     std::string const sourcePackageName = (*sourcePackage).first;
     assert(packageRootMap_.contains(sourcePackageName));
-    std::filesystem::path packagePath = packageRootMap_.at(sourcePackageName);
+    std::filesystem::path const packagePath = packageRootMap_.at(sourcePackageName);
     current = packagePath;
   } else {
     current = std::filesystem::absolute(sourceInternalPath).parent_path();
@@ -161,7 +164,7 @@ FrontendCompiler::Dependency FrontendCompiler::getDependencyForNodeModules(std::
   if (support::isDebug("ModuleResolve"))
     fmt::println("[module resolve] get dependency for '{}'", nextFileInternalPath);
   int32_t const dependee = r->callExportedFunctionWithName<1>(r.getStackTop(), "getDependee", program, nextFile)[0].i32;
-  std::string const dependeePath = getAsString(dependee);
+  std::string const dependeePath = getAsString(static_cast<uint32_t>(dependee));
   if (PackageResolveResult const package = getPackageName(nextFileInternalPath); package.has_value()) {
     auto const [packageName, filePath] = *package;
     std::optional<std::filesystem::path> const packageRoot = findPackageRoot(dependeePath, packageName);
@@ -234,7 +237,7 @@ std::vector<FrontendCompiler::Dependency> FrontendCompiler::getAllDependencies(i
     if (nextFile == 0U) {
       break;
     }
-    std::string const nextFileInternalPath = getAsString(nextFile);
+    std::string const nextFileInternalPath = getAsString(static_cast<uint32_t>(nextFile));
     dependencies.push_back(getDependency(nextFileInternalPath, program, nextFile));
   }
   return dependencies;
@@ -255,14 +258,14 @@ bool FrontendCompiler::checkDiag(int32_t const program, bool useColorfulDiagMess
                                            useColorfulDiagMessage ? WasmFFIBool::WASM_TRUE : WasmFFIBool::WASM_FALSE,
                                            WasmFFIBool::WASM_TRUE)[0]
             .i32;
-    errorMessage_ += getAsString(diagStrOffset) + "\n\n";
+    errorMessage_ += getAsString(static_cast<uint32_t>(diagStrOffset)) + "\n\n";
   }
   errorCount_ += errorCount;
   return errorCount > 0;
 }
 
 FrontendCompiler::~FrontendCompiler() {
-  for (void *p : allocedPtrs_) {
+  for (void *const p : allocedPtrs_) {
     std::free(p);
   }
 }
@@ -321,9 +324,10 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
     if (config.initialMemory.has_value())
       r->callExportedFunctionWithName<0>(stackTop, "setInitialMemory", option, *config.initialMemory);
 
-    for (auto const &[useName, useValue] : config.uses)
+    for (auto const &[useName, useValue] : config.uses) {
       r->callExportedFunctionWithName<0>(stackTop, "addGlobalAlias", option, allocString(useName),
                                          allocString(useValue));
+    }
     r->callExportedFunctionWithName<0>(stackTop, "setOptimizeLevelHints", option, config.optimizationLevel,
                                        config.shrinkLevel);
 

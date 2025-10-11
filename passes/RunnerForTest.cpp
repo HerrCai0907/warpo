@@ -26,17 +26,17 @@
 
 namespace warpo {
 
-static const cli::Opt<bool> EnableGCOptLowerPassForTesting{
+static cli::Opt<bool> EnableGCOptLowerPassForTesting{
     cli::Category::OnlyForTest,
     "--enable-gc-opt-lower-pass-for-testing",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
 };
-static const cli::Opt<bool> EnableGCFastLowerPassForTesting{
+static cli::Opt<bool> EnableGCFastLowerPassForTesting{
     cli::Category::OnlyForTest,
     "--enable-gc-fast-lower-pass-for-testing",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
 };
-static const cli::Opt<bool> EnableAdvancedInliningPassForTesting{
+static cli::Opt<bool> EnableAdvancedInliningPassForTesting{
     cli::Category::OnlyForTest,
     "--enable-advanced-inlining-pass-for-testing",
     [](argparse::Argument &arg) { arg.flag().hidden(); },
@@ -45,7 +45,7 @@ static const cli::Opt<bool> EnableAdvancedInliningPassForTesting{
 std::string passes::runOnWatForTest(std::string const &input, std::regex const &targetFunctionRegex) {
   std::unique_ptr<wasm::Module> m = passes::loadWat(input);
   wasm::PassRunner passRunner(m.get());
-  if ((EnableGCFastLowerPassForTesting.get() == true && EnableGCOptLowerPassForTesting.get() == true)) {
+  if ((EnableGCFastLowerPassForTesting.get() && EnableGCOptLowerPassForTesting.get())) {
     fmt::println("Do not allow to enable FastLower and OptLower at the same time");
     std::terminate();
   }

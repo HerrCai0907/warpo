@@ -24,7 +24,7 @@ static cli::Opt<std::filesystem::path> outputPath{
     "--output",
     [](argparse::Argument &arg) -> void { arg.help("output file").required(); },
 };
-
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 void ascMain(int argc, const char *argv[]) {
   frontend::init();
   passes::init();

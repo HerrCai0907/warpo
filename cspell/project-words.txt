@@ -1,4 +1,6 @@
+Aktiengesellschaft
 assemblyscript
+Bayerische
 Binaryen
 ccache
 currp
@@ -7,12 +9,18 @@ DWARPO
 Eqref
 googletest
 gtest
+inlinings
 insts
 localtostack
+Motoren
+NOLINTNEXTLINE
 popcountll
+refinalization
+refinalize
 succs
 tmptostack
 tostack
 tricore
 unittests
 warpo
+Werke

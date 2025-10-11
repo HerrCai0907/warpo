@@ -52,7 +52,7 @@ struct FunctionIndexMap : private IncMap<wasm::Function *> {
 
 struct TracingInserter : public wasm::Pass {
   FunctionIndexMap const &functionIndexes_;
-  TracingInserter(FunctionIndexMap const &functionIndexes) noexcept : functionIndexes_(functionIndexes) {}
+  explicit TracingInserter(FunctionIndexMap const &functionIndexes) noexcept : functionIndexes_(functionIndexes) {}
   bool isFunctionParallel() override { return true; }
   bool modifiesBinaryenIR() override { return true; }
   std::unique_ptr<wasm::Pass> create() override { return std::make_unique<TracingInserter>(functionIndexes_); }
@@ -66,7 +66,7 @@ struct TracingInserter : public wasm::Pass {
         if (!func->imported())
           return;
         assert(functionIndexes_.contains(func));
-        int32_t index = static_cast<int32_t>(functionIndexes_.getIndex(func));
+        int32_t const index = static_cast<int32_t>(functionIndexes_.getIndex(func));
         wasm::Builder b{*getModule()};
         wasm::Type const resultType = func->getResults();
         if (func->getResults() == wasm::Type::none) {
@@ -168,7 +168,7 @@ struct TracePointInserter : public wasm::Pass {
   explicit TracePointInserter(std::string const &tracePointMappingFile)
       : tracePointMappingFile_(tracePointMappingFile) {}
   void run(wasm::Module *m) override {
-    wasm::Builder b{*m};
+    wasm::Builder const b{*m};
     if (m->getFunctionOrNull(tracePointFunctionName) == nullptr) {
       std::unique_ptr<wasm::Function> func = wasm::Builder::makeFunction(
           tracePointFunctionName, wasm::Signature{wasm::Type::i32, wasm::Type::none}, {}, nullptr);
@@ -196,8 +196,8 @@ struct TracePointInserterPlaceHolder : public wasm::Pass {
   std::unique_ptr<wasm::Pass> create() override {
     return std::unique_ptr<wasm::Pass>{new TracePointInserterPlaceHolder()};
   }
-  void run(wasm::Module *m) override {}
-  void runOnFunction(wasm::Module *m, wasm::Function *func) override {}
+  void run([[maybe_unused]] wasm::Module *m) override {}
+  void runOnFunction([[maybe_unused]] wasm::Module *m, [[maybe_unused]] wasm::Function *func) override {}
 };
 
 } // namespace
@@ -244,7 +244,7 @@ TEST(TracePointInserterTest, WithoutResult) {
     )
   )");
 
-  wasm::Function *fn = m->getFunction("fn_without_result");
+  wasm::Function *const fn = m->getFunction("fn_without_result");
 
   wasm::PassRunner runner{m.get()};
   runner.add(std::unique_ptr<wasm::Pass>{new TracePointInserter(tracePointMappingOption.get())});
@@ -280,7 +280,7 @@ TEST(TracePointInserterTest, WithResult) {
     )
   )");
 
-  wasm::Function *fn = m->getFunction("fn_with_result");
+  wasm::Function *const fn = m->getFunction("fn_with_result");
 
   wasm::PassRunner runner{m.get()};
   runner.add(std::unique_ptr<wasm::Pass>{new TracePointInserter(tracePointMappingOption.get())});
@@ -314,7 +314,7 @@ TEST(TracePointInserterTest, CallImport) {
     )
   )");
 
-  wasm::Function *fn = m->getFunction("fn_call_import");
+  wasm::Function *const fn = m->getFunction("fn_call_import");
 
   wasm::PassRunner runner{m.get()};
   runner.add(std::unique_ptr<wasm::Pass>{new TracePointInserter(tracePointMappingOption.get())});

@@ -30,6 +30,45 @@ jobs:
       - run: npm run test:opt:snapshot -- --debug
       - run: npm run test:as:snapshot
 
+  cpp-linter:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - uses: ./.github/action/build
+      - name: Configure (for compile_commands.json)
+        run: cmake -B build -S .
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        with:
+          database: build/compile_commands.json
+          tidy-checks: "" # Use .clang-tidy config
+          style: ""
+          version: 18
+          files-changed-only: true
+          thread-comments: false # Disable PR comments
+          file-annotations: true # Enable file annotations in workflow logs
+          step-summary: true # Print results in job summary
+          ignore: |
+            third_party/**
+            build/**
+            assemblyscript/**
+      - name: Print linter results
+        if: always()
+        run: |
+          echo "Checks failed: ${{ steps.linter.outputs.checks-failed }}"
+          echo "Clang-tidy checks failed: ${{ steps.linter.outputs.clang-tidy-checks-failed }}"
+          echo "Clang-format checks failed: ${{ steps.linter.outputs.clang-format-checks-failed }}"
+      - name: Fail fast if issues
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
+
   bootstrap:
     strategy:
       matrix:

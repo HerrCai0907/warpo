@@ -1,3 +1,6 @@
+# Disable clang-tidy for third-party dependencies
+unset(CMAKE_CXX_CLANG_TIDY)
+
 set(BUILD_TESTS OFF CACHE BOOL "force disable binaryen's deps" FORCE)
 set(BUILD_STATIC_LIB ON)
 add_subdirectory(binaryen)
@@ -10,6 +13,11 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(fmt)
+target_include_directories(fmt SYSTEM INTERFACE
+  $<BUILD_INTERFACE:${fmt_SOURCE_DIR}/include>
+)
+
+
 
 FetchContent_Declare(
   googletest

@@ -30,11 +30,11 @@ static cli::Opt<std::string> performanceCostModelFile{
 
 static Opcode getOpcodeByName(std::string const &name) {
 #define OPCODE(str, code, cost)                                                                                        \
-  if (name == str) {                                                                                                   \
+  if ((name) == (str)) {                                                                                               \
     return Opcode::code;                                                                                               \
   }
 #define SPECIAL_OPCODE(str, code, cost)                                                                                \
-  if (name == str) {                                                                                                   \
+  if ((name) == (str)) {                                                                                               \
     return Opcode::code;                                                                                               \
   }
 #include "InstructionSizeCostModel.inc"
@@ -42,8 +42,9 @@ static Opcode getOpcodeByName(std::string const &name) {
 }
 
 static float getDefaultSizeCostAverage(Opcode opcode) {
+  static_cast<void>(opcode);
   size_t cnt = 0;
-  float sum = 0.0f;
+  float sum = 0.0F;
 #define OPCODE(str, code, cost)                                                                                        \
   cnt++;                                                                                                               \
   sum += static_cast<float>(cost);
@@ -69,9 +70,10 @@ static float getDefaultSizeCostByOpcode(Opcode opcode) {
   }
 }
 
-static float getDefaultPerformanceCostAverage(Opcode opcode) {
+float getDefaultPerformanceCostAverage(Opcode opcode) {
+  static_cast<void>(opcode);
   size_t cnt = 0;
-  float sum = 0.0f;
+  float sum = 0.0F;
 #define OPCODE(str, code, cost)                                                                                        \
   cnt++;                                                                                                               \
   sum += static_cast<float>(cost);
@@ -101,7 +103,7 @@ namespace {
 
 struct CostModel {
   static CostModel const &ins() {
-    static CostModel costModelParser{};
+    static CostModel const costModelParser{};
     return costModelParser;
   }
 
@@ -115,7 +117,7 @@ private:
   CostModel();
 };
 
-static std::map<Opcode, float> createCostModelFromFile(std::string const &costModelPath) {
+std::map<Opcode, float> createCostModelFromFile(std::string const &costModelPath) {
   std::map<Opcode, float> costModel;
   std::fstream costFile{costModelPath, std::ios::in};
   if (!costFile.is_open()) {
@@ -148,7 +150,7 @@ static std::map<Opcode, float> createCostModelFromFile(std::string const &costMo
   return costModel;
 }
 
-CostModel::CostModel() : sizeCost_(), performanceCost_() {
+CostModel::CostModel() {
   std::string const sizeCostModelPath = sizeCostModelFile.get();
   if (!sizeCostModelPath.empty())
     sizeCost_ = createCostModelFromFile(sizeCostModelPath);
@@ -163,7 +165,7 @@ float CostModel::getSizeCostByExpr(wasm::Expression *expr) const {
     return getSizeCostByOpcode(Opcode::BLOCK) + getSizeCostByOpcode(Opcode::END);
   case wasm::Expression::IfId:
     return getSizeCostByOpcode(Opcode::IF) +
-           (expr->cast<wasm::If>()->ifFalse == nullptr ? 0.0f : getSizeCostByOpcode(Opcode::ELSE)) +
+           (expr->cast<wasm::If>()->ifFalse == nullptr ? 0.0F : getSizeCostByOpcode(Opcode::ELSE)) +
            getSizeCostByOpcode(Opcode::END);
   case wasm::Expression::LoopId:
     return getSizeCostByOpcode(Opcode::LOOP) + getSizeCostByOpcode(Opcode::END);

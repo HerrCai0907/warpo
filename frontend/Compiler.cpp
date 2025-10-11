@@ -128,7 +128,7 @@ warpo::frontend::Config warpo::frontend::getDefaultConfig() {
 }
 
 frontend::CompilationResult frontend::compile() {
-  Config config{
+  Config const config{
       .uses = getUses(),
       .ascWasmPath = convertEmptyStringToNullOpt(ascWasmOption.get()),
       .features = common::Features::fromCLI(),

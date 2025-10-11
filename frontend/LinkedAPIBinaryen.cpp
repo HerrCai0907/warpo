@@ -78,13 +78,14 @@ uint64_t BinaryenBlockForLink(uint64_t module, uint64_t name, uint64_t children,
 }
 uint64_t BinaryenBinaryForLink(uint64_t module, uint32_t op, uint64_t left, uint64_t right,
                                [[maybe_unused]] vb::WasmModule *ctx) {
-  return reinterpret_cast<uint64_t>(BinaryenBinary(reinterpret_cast<BinaryenModuleRef>(module), op,
-                                                   reinterpret_cast<BinaryenExpressionRef>(left),
-                                                   reinterpret_cast<BinaryenExpressionRef>(right)));
+  return reinterpret_cast<uint64_t>(
+      BinaryenBinary(reinterpret_cast<BinaryenModuleRef>(module), static_cast<BinaryenOp>(op),
+                     reinterpret_cast<BinaryenExpressionRef>(left), reinterpret_cast<BinaryenExpressionRef>(right)));
 }
 uint64_t BinaryenUnaryForLink(uint64_t module, uint32_t op, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
-  return reinterpret_cast<uint64_t>(
-      BinaryenUnary(reinterpret_cast<BinaryenModuleRef>(module), op, reinterpret_cast<BinaryenExpressionRef>(value)));
+  return reinterpret_cast<uint64_t>(BinaryenUnary(reinterpret_cast<BinaryenModuleRef>(module),
+                                                  static_cast<BinaryenOp>(op),
+                                                  reinterpret_cast<BinaryenExpressionRef>(value)));
 }
 uint64_t BinaryenRefIsNullForLink(uint64_t module, uint64_t value, [[maybe_unused]] vb::WasmModule *ctx) {
   return reinterpret_cast<uint64_t>(
@@ -169,8 +170,8 @@ void BinaryenLiteralInt32ForLink(uint64_t ptr, int32_t x, [[maybe_unused]] vb::W
   *reinterpret_cast<BinaryenLiteral *>(ptr) = BinaryenLiteralInt32(x);
 }
 void BinaryenLiteralInt64ForLink(uint64_t ptr, int32_t x, int32_t y, [[maybe_unused]] vb::WasmModule *ctx) {
-  *reinterpret_cast<BinaryenLiteral *>(ptr) =
-      BinaryenLiteralInt64((static_cast<int64_t>(y) << 32) | (static_cast<uint32_t>(x)));
+  *reinterpret_cast<BinaryenLiteral *>(ptr) = BinaryenLiteralInt64(static_cast<int64_t>(
+      (static_cast<uint64_t>(static_cast<uint32_t>(y)) << 32U) | static_cast<uint64_t>(static_cast<uint32_t>(x))));
 }
 void BinaryenSetMemoryForLink(uint64_t module, uint32_t initial, uint32_t maximum, uint64_t exportName,
                               uint64_t segmentNames, uint64_t segmentDatas, uint64_t segmentPassives,
@@ -249,9 +250,10 @@ uint64_t TypeBuilderGetTempRefTypeForLink(uint64_t builder, uint64_t heapType, i
 }
 void TypeBuilderSetStructTypeForLink(uint64_t builder, uint32_t index, uint64_t fieldTypes, uint64_t fieldPackedTypes,
                                      uint64_t fieldMutables, uint32_t numFields, [[maybe_unused]] vb::WasmModule *ctx) {
-  TypeBuilderSetStructType(
-      reinterpret_cast<TypeBuilderRef>(builder), index, reinterpret_cast<BinaryenType *>(fieldTypes),
-      reinterpret_cast<BinaryenPackedType *>(fieldPackedTypes), reinterpret_cast<bool *>(fieldMutables), numFields);
+  TypeBuilderSetStructType(reinterpret_cast<TypeBuilderRef>(builder), index,
+                           reinterpret_cast<BinaryenType *>(fieldTypes),
+                           reinterpret_cast<BinaryenPackedType *>(fieldPackedTypes),
+                           reinterpret_cast<bool *>(fieldMutables), static_cast<int32_t>(numFields));
 }
 void TypeBuilderSetSubTypeForLink(uint64_t builder, uint32_t index, uint64_t superType,
                                   [[maybe_unused]] vb::WasmModule *ctx) {
@@ -614,7 +616,7 @@ void BinaryenAddMemoryImportForLink(uint64_t module, uint64_t internalName, uint
                                     uint64_t externalBaseName, uint32_t shared, [[maybe_unused]] vb::WasmModule *ctx) {
   BinaryenAddMemoryImport(reinterpret_cast<BinaryenModuleRef>(module), reinterpret_cast<const char *>(internalName),
                           reinterpret_cast<const char *>(externalModuleName),
-                          reinterpret_cast<const char *>(externalBaseName), shared != 0);
+                          reinterpret_cast<const char *>(externalBaseName), shared != 0 ? 1U : 0U);
 }
 void BinaryenAddTableImportForLink(uint64_t module, uint64_t internalName, uint64_t externalModuleName,
                                    uint64_t externalBaseName, [[maybe_unused]] vb::WasmModule *ctx) {

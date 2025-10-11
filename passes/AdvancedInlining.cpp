@@ -41,7 +41,7 @@ using namespace wasm;
 
 namespace warpo::passes {
 
-static const cli::Opt<uint32_t> AdvInlineTolerableInstructionIncrease{
+static cli::Opt<uint32_t> AdvInlineTolerableInstructionIncrease{
     cli::Category::Optimization,
     "--adv-inline-tolerable-instruction-increase",
     [](argparse::Argument &arg) {
@@ -65,8 +65,8 @@ enum class InliningMode {
 // Useful into on a function, helping us decide if we can inline it
 struct FunctionInfo {
   std::atomic<Index> refs{0};
-  float functionCost = 0.0f;
-  float inlinedCost = 0.0f;
+  float functionCost = 0.0F;
+  float inlinedCost = 0.0F;
   bool hasCalls = false;
   bool hasLoops = false;
   // Something is used globally if there is a reference to it in a table or
@@ -95,20 +95,20 @@ struct FunctionInfo {
     }
     // calculate delta for each call
     float const sizeCostDelta = inlinedCost - getOpcodeSizeCost(Opcode::CALL);
-    float const performanceCostDelta = 0.0f - getOpcodePerformanceCost(Opcode::CALL) - getFunctionPerformanceCost();
+    float const performanceCostDelta = 0.0F - getOpcodePerformanceCost(Opcode::CALL) - getFunctionPerformanceCost();
 
-    float const optimizationLevel = static_cast<float>(common::getOptimizationLevel()) + 0.0001;
-    float const shrinkLevel = static_cast<float>(common::getShrinkLevel()) + 0.0001;
-    float const optRatio = 0.5f * optimizationLevel / (optimizationLevel + shrinkLevel);
-    float const shrinkRatio = 0.5f + 0.5f * shrinkLevel / (optimizationLevel + shrinkLevel);
+    float const optimizationLevel = static_cast<float>(common::getOptimizationLevel()) + 0.0001F;
+    float const shrinkLevel = static_cast<float>(common::getShrinkLevel()) + 0.0001F;
+    float const optRatio = 0.5F * optimizationLevel / (optimizationLevel + shrinkLevel);
+    float const shrinkRatio = 0.5F + 0.5F * shrinkLevel / (optimizationLevel + shrinkLevel);
     float const delta = performanceCostDelta * optRatio + sizeCostDelta * shrinkRatio;
 
-    budget -= refs * delta;
+    budget -= static_cast<float>(refs) * delta;
 
     // TODO: how can we handle potential optimization? e.g. const parameters
     // TODO: handle recursive calls?
 
-    bool const shouldInline = budget >= 0.0f;
+    bool const shouldInline = budget >= 0.0F;
     if (support::isDebug(PASS_NAME, funcName.str)) {
       fmt::println("[" PASS_NAME "] {} '{}', func_cost={}, delta={}, refs={}, budget={}",
                    shouldInline ? "inline" : "not inline", funcName.str, functionCost, delta, refs.load(), budget);
@@ -117,7 +117,7 @@ struct FunctionInfo {
   }
 };
 
-static bool canHandleParams(Function *func) {
+bool canHandleParams(Function *const func) {
   // We cannot inline a function if we cannot handle placing its params in a
   // locals, as all params become locals.
   for (auto param : func->getParams()) {
@@ -133,11 +133,12 @@ using NameInfoMap = std::unordered_map<Name, FunctionInfo>;
 struct FunctionInfoScanner : public WalkerPass<PostWalker<FunctionInfoScanner>> {
   bool isFunctionParallel() override { return true; }
 
-  FunctionInfoScanner(NameInfoMap &infos) : infos(infos) {}
+  explicit FunctionInfoScanner(NameInfoMap &infos) : infos(infos) {}
 
   std::unique_ptr<Pass> create() override { return std::make_unique<FunctionInfoScanner>(infos); }
 
   void visitLoop(Loop *curr) {
+    static_cast<void>(curr);
     // having a loop
     infos[getFunction()->name].hasLoops = true;
   }
@@ -176,7 +177,7 @@ struct InliningState {
 struct Planner : public WalkerPass<TryDepthWalker<Planner>> {
   bool isFunctionParallel() override { return true; }
 
-  Planner(InliningState *state) : state(state) {}
+  explicit Planner(InliningState *state) : state(state) {}
 
   std::unique_ptr<Pass> create() override { return std::make_unique<Planner>(state); }
 
@@ -192,7 +193,8 @@ struct Planner : public WalkerPass<TryDepthWalker<Planner>> {
     } else {
       isUnreachable = curr->type == Type::unreachable;
     }
-    if (state->inlinableFunctions.count(curr->target) && !isUnreachable && curr->target != getFunction()->name) {
+    if ((state->inlinableFunctions.count(curr->target) != 0U) && !isUnreachable &&
+        curr->target != getFunction()->name) {
       // can't add a new element in parallel
       assert(state->actionsForFunction.count(getFunction()->name) > 0);
       state->actionsForFunction[getFunction()->name].emplace_back(getCurrentPointer(),
@@ -301,7 +303,7 @@ struct Inlining : public Pass {
     // decide which to inline
     InliningState state;
     ModuleUtils::iterDefinedFunctions(*module, [&](Function *func) {
-      InliningMode inliningMode = getInliningMode(func->name);
+      InliningMode const inliningMode = getInliningMode(func->name);
       assert(inliningMode != InliningMode::Unknown);
       if (inliningMode != InliningMode::Uninlineble) {
         state.inlinableFunctions[func->name] = inliningMode;
@@ -339,7 +341,7 @@ struct Inlining : public Pass {
       // avoid risk of races
       // note that we do not risk stalling progress, as each iteration() will
       // inline at least one call before hitting this
-      if (inlinedUses.count(func->name)) {
+      if (inlinedUses.count(func->name) != 0U) {
         continue;
       }
       for (auto &action : state.actionsForFunction[name]) {
@@ -348,10 +350,10 @@ struct Inlining : public Pass {
         // avoid risk of races
         // note that we do not risk stalling progress, as each iteration() will
         // inline at least one call before hitting this
-        if (inlinedInto.count(inlinedFunction)) {
+        if (inlinedInto.count(inlinedFunction) != 0U) {
           continue;
         }
-        Name inlinedName = inlinedFunction->name;
+        Name const inlinedName = inlinedFunction->name;
         if (!isUnderSizeLimit(func->name, inlinedName)) {
           continue;
         }
@@ -390,7 +392,7 @@ struct Inlining : public Pass {
     module->removeFunctions([&](Function *func) {
       auto name = func->name;
       auto &info = infos[name];
-      return inlinedUses.count(name) && inlinedUses[name] == info.refs && !info.usedGlobally;
+      return (inlinedUses.count(name) != 0U) && inlinedUses[name] == info.refs && !info.usedGlobally;
     });
   }
 
@@ -399,7 +401,7 @@ struct Inlining : public Pass {
 
   // Decide for a given function whether to inline, and if so in what mode.
   InliningMode getInliningMode(Name name) {
-    wasm::Function *func = module->getFunction(name);
+    wasm::Function *const func = module->getFunction(name);
     FunctionInfo &info = infos[name];
     if (info.inliningMode != InliningMode::Unknown) {
       return info.inliningMode;
@@ -423,7 +425,8 @@ struct Inlining : public Pass {
   // This is called right before actually performing the inlining, that is, we
   // are guaranteed to inline after this.
   Function *getActuallyInlinedFunction(Function *func) {
-    InliningMode inliningMode = infos[func->name].inliningMode;
+    InliningMode const inliningMode = infos[func->name].inliningMode;
+    static_cast<void>(inliningMode);
     // If we want to inline this function itself, do so.
     assert(inliningMode == InliningMode::Full);
     return func;
@@ -439,7 +442,7 @@ struct Inlining : public Pass {
   bool isUnderSizeLimit(Name target, Name source) {
     // Estimate the combined binary size from the number of instructions.
     auto combinedSize = infos[target].inlinedCost + infos[source].inlinedCost;
-    auto estimatedBinarySize = Measurer::BytesPerExpr * combinedSize;
+    auto estimatedBinarySize = Measurer::BytesPerExpr * static_cast<double>(combinedSize);
     // The limit is arbitrary, but based on the links above. It is a very high
     // value that should appear very rarely in practice (for example, it does
     // not occur on the Emscripten benchmark suite of real-world codebases).

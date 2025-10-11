@@ -35,7 +35,7 @@ struct PerformanceData {
   size_t cnt_ = 0;
 };
 
-static const char *toString(PerfItemKind kind) {
+const char *toString(PerfItemKind kind) {
   switch (kind) {
 #define PERF_ITEM_KIND_TOP(name)                                                                                       \
   case PerfItemKind::name:                                                                                             \
@@ -44,12 +44,13 @@ static const char *toString(PerfItemKind kind) {
   case PerfItemKind::parent##_##name:                                                                                  \
     return #parent "_" #name;
 #include "warpo/support/StatisticsKinds.def"
+  default:
+    return "Unknown";
   }
-  return "Unknown";
 }
 
-static std::string toString(std::chrono::nanoseconds ns) {
-  uint64_t duration = ns.count();
+std::string toString(std::chrono::nanoseconds ns) {
+  uint64_t duration = static_cast<uint64_t>(ns.count());
   if (duration >= 1'000'000'000)
     return fmt::format("{:.3f}s", static_cast<double>(duration) / 1'000'000'000);
   if (duration >= 1'000'000)
@@ -87,7 +88,7 @@ public:
   }
 
   void addData(PerfItemKind item, std::chrono::nanoseconds duration) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> const lock(mutex_);
     PerformanceData &data = data_[item];
     data.totalDuration_ += duration;
     data.cnt_++;
@@ -120,7 +121,7 @@ PerfRAII::~PerfRAII() {
 void PerfRAII::release() {
   if (!EnableStatisticsOption.get())
     return;
-  std::chrono::nanoseconds endTime = now();
+  std::chrono::nanoseconds const endTime = now();
   PerformanceCollector::ins().addData(item_, endTime - startTime_);
   free_ = true;
 }

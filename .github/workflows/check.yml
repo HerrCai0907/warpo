@@ -40,19 +40,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
       - run: npm ci
-      - uses: ./.github/action/build
-      - name: Configure (for compile_commands.json)
-        run: cmake -B build -S .
+      - name: install assemblyscript deps
+        run: npm ci
+        working-directory: assemblyscript
+      - name: generate compile_commands.json
+        # build custom target to generate necessary headers
+        run: |
+          set -e
+          cmake -B build -S .
+          cmake --build build --parallel --target warpo_frontend_asc_wasm_hpp
       - uses: cpp-linter/cpp-linter-action@v2
         id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           database: build/compile_commands.json
           tidy-checks: "" # Use .clang-tidy config
-          style: ""
-          version: 18
+          style: "file"
+          version: 21
           files-changed-only: true
-          thread-comments: false # Disable PR comments
+          thread-comments: ${{ github.event_name == 'pull_request' }}
           file-annotations: true # Enable file annotations in workflow logs
           step-summary: true # Print results in job summary
           ignore: |

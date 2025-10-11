@@ -10021,9 +10021,8 @@ export class Compiler extends DiagnosticEmitter {
   /** Check if possible to optimize the active initialization away if it's zero */
   canOptimizeZeroInitialization(valueExpr: ExpressionRef): bool {
     const runtime = this.options.runtime;
-    return (runtime == Runtime.Incremental || runtime == Runtime.Stub)
-      ? isConstZero(valueExpr)
-      : false;
+    // Memory will be filled with 0 on itcms.__new
+    return runtime == Runtime.Incremental ? isConstZero(valueExpr) : false;
   }
 
   /** Makes a constant zero of the specified type. */
@@ -10402,6 +10401,7 @@ export class Compiler extends DiagnosticEmitter {
 
     // Initialize deferred non-parameter fields
     if (nonParameterFields) {
+      const unmanagedClass = classInstance.type.isUnmanaged;
       for (let i = 0, k = nonParameterFields.length; i < k; ++i) {
         let field = unchecked(nonParameterFields[i]);
         let fieldType = field.type;
@@ -10410,17 +10410,24 @@ export class Compiler extends DiagnosticEmitter {
         assert(fieldPrototype.parameterIndex < 0);
         let setterInstance = assert(field.setterInstance);
 
-        if (initializerNode) {
-          // Explicit initializer
-          // Check if we need to initialize this field
+        if (initializerNode){
           const valueExpr: ExpressionRef = this.compileExpression(initializerNode, fieldType, Constraints.ConvImplicit);
-          // Memory will be filled with 0 on itcms.__new
-          // Memory grow will default to initialized with 0 as wasm spec
-          // So, optimize the active initialization away if it's zero
-          if (!this.canOptimizeZeroInitialization(valueExpr)) {
+          if(unmanagedClass || !this.canOptimizeZeroInitialization(valueExpr)) {
             let expr = this.makeCallDirect(setterInstance, [
               module.local_get(thisLocalIndex, sizeTypeRef),
               valueExpr
+            ], field.identifierNode, true);
+            if (this.currentType != Type.void) { // in case
+              expr = module.drop(expr);
+            }
+            stmts.push(expr);
+          }
+        } else {
+          if(unmanagedClass || (this.options.runtime != Runtime.Incremental)) {
+            let expr = this.makeCallDirect(setterInstance, [
+              module.local_get(thisLocalIndex, sizeTypeRef),
+              // Create only when necessary since makeZero will allocte persistent memory by Binaryen.
+              this.makeZero(fieldType)
             ], field.identifierNode, true);
             if (this.currentType != Type.void) { // in case
               expr = module.drop(expr);

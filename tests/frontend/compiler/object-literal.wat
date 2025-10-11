@@ -3939,6 +3939,14 @@
     )
    )
   )
+  (call $object-literal/Unmanaged#set:bar
+   (local.get $this)
+   (i32.const 0)
+  )
+  (call $object-literal/Unmanaged#set:baz
+   (local.get $this)
+   (i32.const 0)
+  )
   (local.get $this)
  )
  (func $object-literal/Unmanaged#get:bar (param $this i32) (result i32)

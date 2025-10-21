@@ -22,14 +22,12 @@
       local.set $0
 ;; ======remove=======
 ;;      block ;;i32
+;;          global.get $~lib/memory/__stack_pointer
 ;; ====================
         local.get $0
 ;; ======remove=======
-;;        local.set $1
-;;          global.get $~lib/memory/__stack_pointer
-;;          local.get $1
 ;;        i32.store $0 offset=4 align=1
-;;        local.get $1
+;;        local.get $0
 ;;      end
 ;; ====================
       call $tests/snapshot_diff/gc_lower_opt/ssa_merge/ssa_merge_by_get_local/foo

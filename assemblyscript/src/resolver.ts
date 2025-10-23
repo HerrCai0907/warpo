@@ -108,6 +108,8 @@ import {
   BuiltinTypesContext
 } from "./builtins";
 
+import { addField, createClass } from "./warpo";
+
 /** Indicates whether errors are reported or not. */
 export const enum ReportMode {
   /** Report errors. */
@@ -3328,7 +3330,9 @@ export class Resolver extends DiagnosticEmitter {
     // Alias base members
     let memoryOffset: u32 = 0;
     let base = instance.base;
+    let parentName: string|null = null;
     if (base) {
+      parentName = base.internalName;
       let implicitlyExtendsObject = instance.prototype.implicitlyExtendsObject;
       assert(!pendingClasses.has(base));
       let baseMembers = base.members;
@@ -3352,6 +3356,8 @@ export class Resolver extends DiagnosticEmitter {
       }
       memoryOffset = base.nextMemoryOffset;
     }
+
+    createClass(instance.internalName, parentName, instance.type.byteSize, 0);
 
     // Resolve instance members
     let prototype = instance.prototype;
@@ -3413,6 +3419,9 @@ export class Resolver extends DiagnosticEmitter {
                   let mask = byteSize - 1;
                   if (memoryOffset & mask) memoryOffset = (memoryOffset | mask) + 1;
                   boundInstance.memoryOffset = memoryOffset;
+                  let classOrWrapper = fieldType.getClassOrWrapper(this.program);
+                  let fullTypeName = classOrWrapper ? classOrWrapper.internalName : fieldType.toString();
+                  addField(instance.internalName, memberName, fullTypeName, boundInstance.memoryOffset, fieldType.isNullableReference);
                   memoryOffset += byteSize;
                 }
                 boundPrototype.instance = boundInstance;

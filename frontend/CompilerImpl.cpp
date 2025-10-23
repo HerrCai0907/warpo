@@ -384,6 +384,7 @@ warpo::frontend::CompilationResult FrontendCompiler::compile(std::vector<std::st
       return {.m = {}, .errorMessage = errorMessage_};
     asModule_.set(BinaryenModule{reinterpret_cast<wasm::Module *>(
         r->callExportedFunctionWithName<1>(stackTop, "getBinaryenModuleRef", compiled)[0].i64)});
+
     compileStat.release();
     return {.m = std::move(asModule_), .errorMessage = errorMessage_};
   } catch (vb::TrapException const &e) {

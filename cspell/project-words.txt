@@ -8,6 +8,7 @@ ccache
 cppcoreguidelines
 currp
 Dependee
+DWARFYAML
 DWARPO
 Eqref
 googletest
@@ -21,6 +22,7 @@ NOLINTNEXTLINE
 popcountll
 refinalization
 refinalize
+rtid
 succs
 tmptostack
 tostack

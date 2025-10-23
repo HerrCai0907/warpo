@@ -10,7 +10,7 @@
     "build:ts": "tsc -p tools/scripts/tsconfig.json",
     "build:cpp": "cmake -S . -B build && cmake --build build --parallel",
     "build": "npm run build:ts && npm run build:cpp",
-    "test:ut": "./build/passes/warpo_passes_test && ./build/support/warpo_support_test",
+    "test:ut": "cd build && ctest --output-on-failure",
     "test:as:snapshot": "./build/tests/frontend/warpo_frontend_test",
     "test:opt:snapshot": "node tests/snapshot_diff/index.mjs",
     "test:bootstrap:debug": "./tests/bootstrap/debug.sh",

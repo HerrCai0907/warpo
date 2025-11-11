@@ -47,6 +47,35 @@ void addGlobal(uint32_t const variableNamePtr, uint32_t const typeNamePtr, vb::W
   pCompiler->asModule_.variableInfo_.addGlobalType(std::move(variableName), typeName);
 }
 
+void addSubProgram(uint32_t const subProgramNamePtr, uint32_t const belongClassNamePtr,
+                   vb::WasmModule const *const ctx) {
+  std::string subProgramName = WarpRunner::getString(ctx, subProgramNamePtr);
+  std::string const belongClassName = WarpRunner::getString(ctx, belongClassNamePtr);
+  FrontendCompiler *const pCompiler = static_cast<FrontendCompiler *>(ctx->getContext());
+  pCompiler->asModule_.variableInfo_.addSubProgram(std::move(subProgramName), belongClassName);
+}
+
+void addParameter(uint32_t const subProgramNamePtr, uint32_t const variableNamePtr, uint32_t const typeNamePtr,
+                  uint32_t const index, uint32_t const nullable, vb::WasmModule const *const ctx) {
+  std::string const subProgramName = WarpRunner::getString(ctx, subProgramNamePtr);
+  std::string variableName = WarpRunner::getString(ctx, variableNamePtr);
+  std::string const typeName = WarpRunner::getString(ctx, typeNamePtr);
+  FrontendCompiler *const pCompiler = static_cast<FrontendCompiler *>(ctx->getContext());
+  pCompiler->asModule_.variableInfo_.addParameter(subProgramName, std::move(variableName), typeName, index,
+                                                  nullable != 0);
+}
+
+void addLocal(uint32_t const subProgramNamePtr, uint32_t const variableNamePtr, uint32_t const typeNamePtr,
+              uint32_t const index, uint32_t const start, uint32_t const end, uint32_t const nullable,
+              vb::WasmModule const *const ctx) {
+  std::string const subProgramName = WarpRunner::getString(ctx, subProgramNamePtr);
+  std::string variableName = WarpRunner::getString(ctx, variableNamePtr);
+  std::string const typeName = WarpRunner::getString(ctx, typeNamePtr);
+  FrontendCompiler *const pCompiler = static_cast<FrontendCompiler *>(ctx->getContext());
+  pCompiler->asModule_.variableInfo_.addLocal(subProgramName, std::move(variableName), typeName, index, start, end,
+                                              nullable != 0);
+}
+
 } // namespace
 
 std::vector<vb::NativeSymbol> createVariableInfoAPI() {
@@ -55,6 +84,9 @@ std::vector<vb::NativeSymbol> createVariableInfoAPI() {
       STATIC_LINK("warpo", "_WarpoAddField", addField),
       STATIC_LINK("warpo", "_WarpoAddTemplateType", addTemplateType),
       STATIC_LINK("warpo", "_WarpoAddGlobal", addGlobal),
+      STATIC_LINK("warpo", "_WarpoAddSubProgram", addSubProgram),
+      STATIC_LINK("warpo", "_WarpoAddParameter", addParameter),
+      STATIC_LINK("warpo", "_WarpoAddLocal", addLocal),
   };
 }
 
